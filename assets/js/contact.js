@@ -3,9 +3,9 @@
    ============================================================ */
 
 // ----- REPLACE THESE WITH YOUR EMAILJS CREDENTIALS -----
-const EMAILJS_SERVICE_ID  = 'YOUR_EMAILJS_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY  = 'YOUR_EMAILJS_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'service_1ni6j9l';
+const EMAILJS_TEMPLATE_ID = 'template_e5652u2';
+const EMAILJS_PUBLIC_KEY  = 'QR-TTFj2f6_BZOxKX';
 // --------------------------------------------------------
 
 // Load EmailJS SDK

@@ -3,8 +3,8 @@
    ============================================================ */
 
 // ─── REPLACE WITH YOUR SUPABASE CREDENTIALS ──────────────────
-const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL      = 'https://lxbsdgvzdqptdatluxlg.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4YnNkZ3Z6ZHFwdGRhdGx1eGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjg0MDgsImV4cCI6MjA5ODYwNDQwOH0.7o3ZraBo-zcjgBro2K5bICoYm8YyoNvB3A0lajpeF1A';
 // ─────────────────────────────────────────────────────────────
 
 // Load Supabase via CDN (no npm needed)
