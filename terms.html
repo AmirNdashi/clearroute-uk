@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — ClearRoute UK</title>
+  <meta name="description" content="Read ClearRoute UK's Terms of Service — governing the use of our UK documentation consultancy services." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <style>
+    .legal-hero {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+      padding: 140px 0 70px;
+      position: relative;
+    }
+    .legal-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 40%, rgba(201,168,76,0.06) 0%, transparent 55%);
+    }
+    .legal-hero-content { position: relative; z-index: 1; }
+    .legal-hero h1 { color: var(--white); margin-bottom: 12px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+    .legal-hero p { color: rgba(255,255,255,0.5); font-size: 0.9rem; }
+
+    .legal-body { padding: 72px 0 100px; }
+    .legal-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 56px;
+      align-items: flex-start;
+    }
+    .legal-nav {
+      position: sticky;
+      top: 100px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .legal-nav-title {
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .legal-nav a {
+      display: block;
+      padding: 8px 10px;
+      font-family: var(--font-heading);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+      margin-bottom: 3px;
+    }
+    .legal-nav a:hover { background: var(--off-white); color: var(--navy); }
+
+    .legal-content > section { margin-bottom: 56px; }
+    .legal-content h2 {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--light-grey);
+    }
+    .legal-content h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 20px 0 10px;
+    }
+    .legal-content p {
+      font-size: 0.93rem;
+      color: var(--text-muted);
+      line-height: 1.9;
+      margin-bottom: 14px;
+    }
+    .legal-content ul {
+      margin: 12px 0 14px 20px;
+      list-style: disc;
+    }
+    .legal-content ul li {
+      font-size: 0.93rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 6px;
+    }
+    .legal-highlight {
+      background: rgba(201,168,76,0.06);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+    .legal-updated {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--off-white);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+    }
+    .legal-updated i { color: var(--gold); }
+
+    @media (max-width: 768px) {
+      .legal-grid { grid-template-columns: 1fr; }
+      .legal-nav { position: static; display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-transition active"></div>
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <a href="index.html" class="navbar-logo">
+          <img src="assets/images/logo.png" alt="ClearRoute UK Logo" />
+          <div class="navbar-logo-text"><span class="name">ClearRoute UK</span><span class="tagline">Documentation Experts</span></div>
+        </a>
+        <ul class="navbar-nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="how-it-works.html">How It Works</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div class="navbar-cta"><a href="contact.html" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Get Started</a></div>
+        <button class="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-nav">
+    <div class="mobile-nav-header">
+      <a href="index.html" class="navbar-logo">
+        <img src="assets/images/logo.png" alt="ClearRoute UK" />
+        <div class="navbar-logo-text"><span class="name">ClearRoute UK</span><span class="tagline">Documentation Experts</span></div>
+      </a>
+    </div>
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="services.html"><i class="fas fa-briefcase"></i> Services</a>
+    <a href="how-it-works.html"><i class="fas fa-route"></i> How It Works</a>
+    <a href="about.html"><i class="fas fa-users"></i> About Us</a>
+    <a href="faq.html"><i class="fas fa-question-circle"></i> FAQ</a>
+    <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+    <a href="contact.html" class="btn btn-primary mt-24" style="justify-content:center;"><i class="fas fa-paper-plane"></i> Get Started</a>
+    <div class="mobile-nav-contact">
+      <a href="mailto:hello@clearrouteuk.co.uk"><i class="fas fa-envelope"></i> hello@clearrouteuk.co.uk</a>
+      <a href="https://wa.me/#" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
+    </div>
+  </div>
+
+  <main>
+
+    <section class="legal-hero">
+      <div class="container">
+        <div class="legal-hero-content">
+          <span class="section-label" style="margin-bottom:12px;display:inline-block;">Legal</span>
+          <h1>Terms of Service</h1>
+          <p>Last updated: January 2025 &nbsp;·&nbsp; ClearRoute UK</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="legal-body">
+      <div class="container">
+        <div class="legal-grid">
+
+          <nav class="legal-nav">
+            <div class="legal-nav-title">Contents</div>
+            <a href="#overview">1. Overview</a>
+            <a href="#services">2. Our Services</a>
+            <a href="#eligibility">3. Eligibility</a>
+            <a href="#fees">4. Fees & Payment</a>
+            <a href="#obligations">5. Client Obligations</a>
+            <a href="#liability">6. Limitation of Liability</a>
+            <a href="#disclaimer">7. Disclaimer</a>
+            <a href="#intellectual">8. Intellectual Property</a>
+            <a href="#termination">9. Termination</a>
+            <a href="#governing">10. Governing Law</a>
+            <a href="#contact-legal">11. Contact</a>
+          </nav>
+
+          <div class="legal-content">
+
+            <div class="legal-updated"><i class="fas fa-calendar-alt"></i> Last updated: January 2025</div>
+
+            <div class="legal-highlight">
+              Please read these Terms of Service carefully before using ClearRoute UK's services.
+              By engaging our services, you agree to be bound by these terms.
+            </div>
+
+            <section id="overview">
+              <h2>1. Overview</h2>
+              <p>These Terms of Service ("Terms") govern the relationship between ClearRoute UK ("we", "us", "our") and any person ("client", "you") who engages our consultancy services. By using our website or engaging our services, you agree to these Terms in full.</p>
+              <p>ClearRoute UK is an independent documentation consultancy. We are not a law firm, immigration adviser, or regulated financial adviser. We do not provide legal advice. Our services consist of guidance, document preparation support, and application assistance.</p>
+            </section>
+
+            <section id="services">
+              <h2>2. Our Services</h2>
+              <p>ClearRoute UK provides consultancy and application support services in relation to the following:</p>
+              <ul>
+                <li>UK driving licence conversion guidance and application support</li>
+                <li>DVSA theory and practical test booking assistance</li>
+                <li>National Insurance number application support</li>
+                <li>Biometric Residence Permit (BRP) and eVisa guidance</li>
+                <li>UK address proof setup guidance</li>
+                <li>UK bank account setup guidance</li>
+              </ul>
+              <p>All services are purely advisory and administrative in nature. We assist clients in preparing and submitting applications through official UK government channels. We do not submit applications on behalf of clients without their knowledge and explicit consent.</p>
+              <div class="legal-highlight">
+                <strong>Important:</strong> ClearRoute UK is not affiliated with the DVLA, DVSA, HMRC, Home Office, or any UK government body. We have no influence over government decisions, processing times, or outcomes.
+              </div>
+            </section>
+
+            <section id="eligibility">
+              <h2>3. Eligibility</h2>
+              <p>You must be 18 years of age or older to engage ClearRoute UK's services. By using our services, you confirm that you are legally eligible to make the application(s) you are seeking assistance with and that all information provided to us is accurate and complete.</p>
+              <p>We reserve the right to decline to provide services where we reasonably believe the engagement would be unlawful, inappropriate, or outside the scope of our expertise.</p>
+            </section>
+
+            <section id="fees">
+              <h2>4. Fees & Payment</h2>
+              <p>Our consultancy fees are agreed in writing before any work commences. All fees quoted are for our consultancy and support services only. Government application fees, test fees, and other third-party costs are always separate and are paid directly by the client to the relevant authority.</p>
+              <h3>4.1 Deposit</h3>
+              <p>Where a deposit is required, this will be agreed and confirmed in writing before work begins. The deposit is non-refundable once preparatory work has commenced, except where we are unable to provide the agreed service due to circumstances within our control.</p>
+              <h3>4.2 Refunds</h3>
+              <p>If a service cannot be completed due to reasons within our control, we will discuss a fair resolution with you on a case-by-case basis. We do not offer refunds based on government decisions, processing delays, or unsuccessful application outcomes where we have fulfilled our obligations under these Terms.</p>
+            </section>
+
+            <section id="obligations">
+              <h2>5. Client Obligations</h2>
+              <p>By engaging our services, you agree to:</p>
+              <ul>
+                <li>Provide accurate, complete, and truthful information at all times</li>
+                <li>Supply all required documents promptly when requested</li>
+                <li>Notify us immediately of any change in circumstances relevant to your application</li>
+                <li>Not use our services for any unlawful purpose</li>
+                <li>Understand that government processing times are outside our control</li>
+              </ul>
+              <p>We reserve the right to terminate services immediately and without refund if a client provides false or misleading information.</p>
+            </section>
+
+            <section id="liability">
+              <h2>6. Limitation of Liability</h2>
+              <p>To the fullest extent permitted by law, ClearRoute UK's total liability to you in connection with our services shall not exceed the total consultancy fees paid by you to us for the specific service in question.</p>
+              <p>We are not liable for: government processing delays; unsuccessful application outcomes; changes in government policy or requirements; actions or omissions by third parties (including government bodies); or any indirect, consequential, or special loss.</p>
+            </section>
+
+            <section id="disclaimer">
+              <h2>7. Disclaimer</h2>
+              <p>Our services provide guidance and administrative support only. Nothing on our website or in our communications constitutes legal advice. Outcomes of applications to government bodies cannot be guaranteed.</p>
+              <p>All driving tests must be sat by the applicant in person. We do not and cannot sit tests on behalf of clients. Any suggestion that we can guarantee test results or government decisions is false and should be reported to us immediately.</p>
+            </section>
+
+            <section id="intellectual">
+              <h2>8. Intellectual Property</h2>
+              <p>All content on the ClearRoute UK website — including text, design, graphics, and code — is the intellectual property of ClearRoute UK. You may not reproduce, copy, or distribute any part of our website without prior written permission.</p>
+            </section>
+
+            <section id="termination">
+              <h2>9. Termination</h2>
+              <p>Either party may terminate an engagement by providing written notice. Upon termination, any fees due for work already completed become immediately payable. We reserve the right to terminate services without notice where a client breaches these Terms.</p>
+            </section>
+
+            <section id="governing">
+              <h2>10. Governing Law</h2>
+              <p>These Terms are governed by the laws of England and Wales. Any disputes arising from these Terms or our services shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
+            </section>
+
+            <section id="contact-legal">
+              <h2>11. Contact</h2>
+              <p>If you have any questions about these Terms of Service, please contact us at:</p>
+              <p>
+                <strong>ClearRoute UK</strong><br />
+                Email: <a href="mailto:hello@clearrouteuk.co.uk" style="color:var(--navy);">hello@clearrouteuk.co.uk</a><br />
+                Website: <a href="contact.html" style="color:var(--navy);">clearrouteuk.co.uk/contact</a>
+              </p>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="padding:24px 0;">
+        <p style="color:rgba(255,255,255,0.35);font-size:0.85rem;">&copy; <span id="footer-year"></span> ClearRoute UK. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="terms.html" style="color:var(--gold);">Terms of Service</a>
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top"><i class="fas fa-arrow-up"></i></button>
+  <div class="toast-container"></div>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>

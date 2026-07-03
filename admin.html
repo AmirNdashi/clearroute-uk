@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — ClearRoute UK</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ══════════════════════════════════════
+       AUTH SCREEN
+  ══════════════════════════════════════ -->
+  <div class="admin-auth" id="adminAuth">
+    <div class="admin-auth-card">
+      <div class="admin-auth-logo">Clear<span>Route</span> UK</div>
+      <div class="admin-auth-sub">Admin Panel</div>
+      <h2>Sign In</h2>
+      <p>Enter your admin credentials to access the dashboard.</p>
+      <input type="email"    id="authEmail"    class="admin-input" placeholder="Admin email" />
+      <input type="password" id="authPassword" class="admin-input" placeholder="Password" />
+      <button class="admin-btn admin-btn-primary" id="authBtn">
+        <i class="fas fa-lock"></i> Sign In to Dashboard
+      </button>
+      <div class="admin-error-msg" id="authError"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ADMIN LAYOUT
+  ══════════════════════════════════════ -->
+  <div class="admin-layout" id="adminLayout">
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-logo">
+        <span class="name">ClearRoute UK</span>
+        <span class="sub">Admin Dashboard</span>
+      </div>
+
+      <div class="admin-sidebar-section">
+        <div class="admin-sidebar-section-title">Overview</div>
+        <div class="admin-nav-item active" data-page="dashboard">
+          <i class="fas fa-th-large"></i> Dashboard
+        </div>
+      </div>
+
+      <div class="admin-sidebar-section">
+        <div class="admin-sidebar-section-title">Conversations</div>
+        <div class="admin-nav-item" data-page="chat">
+          <i class="fas fa-comments"></i> Live Chat Inbox
+          <span class="session-badge admin-active" id="sidebarChatBadge" style="margin-left:auto;display:none;">!</span>
+        </div>
+      </div>
+
+      <div class="admin-sidebar-section">
+        <div class="admin-sidebar-section-title">Site</div>
+        <div class="admin-nav-item" data-page="enquiries">
+          <i class="fas fa-envelope"></i> Enquiries
+        </div>
+      </div>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar"><i class="fas fa-user"></i></div>
+          <div>
+            <span class="admin-user-name" id="sidebarUserEmail">Admin</span>
+            <span class="admin-user-role">Administrator</span>
+          </div>
+        </div>
+        <button class="admin-btn admin-btn-danger" id="logoutBtn" style="width:100%;">
+          <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+
+      <div class="admin-topbar">
+        <div class="admin-topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="admin-topbar-right">
+          <span style="font-size:0.82rem;color:#6B7280;">
+            <span class="admin-notify-dot"></span> System Online
+          </span>
+          <a href="index.html" target="_blank"
+            style="font-size:0.82rem;color:#0B1F3A;font-weight:600;display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-external-link-alt"></i> View Site
+          </a>
+        </div>
+      </div>
+
+      <!-- ── DASHBOARD ── -->
+      <div class="admin-page active" id="page-dashboard">
+
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div>
+              <div class="label">Active Sessions</div>
+              <div class="value" id="statSessions">—</div>
+            </div>
+            <div class="icon icon-navy"><i class="fas fa-comments"></i></div>
+          </div>
+          <div class="admin-stat-card">
+            <div>
+              <div class="label">Pending Handoffs</div>
+              <div class="value" id="statHandoffs">—</div>
+            </div>
+            <div class="icon icon-gold"><i class="fas fa-headset"></i></div>
+          </div>
+          <div class="admin-stat-card">
+            <div>
+              <div class="label">Resolved Today</div>
+              <div class="value" id="statResolved">—</div>
+            </div>
+            <div class="icon icon-green"><i class="fas fa-check-double"></i></div>
+          </div>
+          <div class="admin-stat-card">
+            <div>
+              <div class="label">Total Messages</div>
+              <div class="value" id="statMessages">—</div>
+            </div>
+            <div class="icon icon-purple"><i class="fas fa-envelope"></i></div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-bell" style="color:#C9A84C;margin-right:8px;"></i>Recent Activity</h3>
+          </div>
+          <div style="padding:20px;" id="dashboardActivity">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading activity...
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── CHAT INBOX ── -->
+      <div class="admin-page" id="page-chat">
+
+        <div class="chat-inbox-layout">
+
+          <!-- Sessions List -->
+          <div class="chat-sessions-list">
+            <div class="chat-sessions-header">
+              <span>Chat Sessions</span>
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadSessions()">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+            <div id="sessionsList">
+              <div style="padding:20px;text-align:center;color:#9CA3AF;font-size:0.85rem;">
+                Loading sessions...
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat View -->
+          <div class="chat-view" id="chatViewPanel">
+            <div class="chat-empty-state">
+              <i class="fas fa-comments"></i>
+              <h3>No session selected</h3>
+              <p>Select a chat session from the list to view messages and reply.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── ENQUIRIES ── -->
+      <div class="admin-page" id="page-enquiries">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Contact Form Enquiries</h3>
+            <span style="font-size:0.82rem;color:#6B7280;">Received via EmailJS — check your inbox at hello@clearrouteuk.co.uk</span>
+          </div>
+          <div style="padding:40px;text-align:center;color:#9CA3AF;">
+            <i class="fas fa-inbox" style="font-size:2rem;color:#DDE3ED;display:block;margin-bottom:12px;"></i>
+            <p style="font-size:0.9rem;">Contact form submissions are delivered directly to your email via EmailJS.</p>
+            <p style="font-size:0.85rem;margin-top:8px;">Check <strong>hello@clearrouteuk.co.uk</strong> for all enquiries.</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>

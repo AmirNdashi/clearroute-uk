@@ -1,0 +1,184 @@
+/* ============================================================
+   CLEARROUTE UK — ANIMATIONS
+   ============================================================ */
+
+/* --- Scroll Reveal --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1),
+              transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1),
+              transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1),
+              transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1),
+              transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Delay utilities */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+.delay-6 { transition-delay: 0.6s; }
+.delay-7 { transition-delay: 0.7s; }
+
+/* --- Hero Entrance --- */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.hero-animate-1 { animation: heroFadeUp 0.9s cubic-bezier(0.4,0,0.2,1) 0.2s both; }
+.hero-animate-2 { animation: heroFadeUp 0.9s cubic-bezier(0.4,0,0.2,1) 0.4s both; }
+.hero-animate-3 { animation: heroFadeUp 0.9s cubic-bezier(0.4,0,0.2,1) 0.6s both; }
+.hero-animate-4 { animation: heroFadeUp 0.9s cubic-bezier(0.4,0,0.2,1) 0.8s both; }
+.hero-animate-5 { animation: heroFadeUp 0.9s cubic-bezier(0.4,0,0.2,1) 1.0s both; }
+
+/* --- Floating Animation (decorative shapes) --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-18px); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-12px) rotate(5deg); }
+}
+
+.float       { animation: float     4s ease-in-out infinite; }
+.float-slow  { animation: floatSlow 6s ease-in-out infinite; }
+.float-delay { animation: float     4s ease-in-out 1s infinite; }
+
+/* --- Pulse Gold --- */
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+  50%       { box-shadow: 0 0 0 14px rgba(201,168,76,0); }
+}
+
+.pulse-gold { animation: pulseGold 2.5s ease-in-out infinite; }
+
+/* --- Shimmer (loading / skeleton) --- */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--light-grey) 25%,
+    var(--border)     50%,
+    var(--light-grey) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+/* --- Gradient border animation --- */
+@keyframes borderRotate {
+  from { --angle: 0deg; }
+  to   { --angle: 360deg; }
+}
+
+/* --- Counter Number Animation --- */
+.counter-num {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  color: var(--gold);
+  transition: all 0.3s;
+}
+
+/* --- Spin --- */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spin { animation: spin 1s linear infinite; }
+
+/* --- Bounce dot (loading indicator) --- */
+@keyframes bounceDot {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+  40%            { transform: scale(1); opacity: 1; }
+}
+
+.bounce-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: bounceDot 1.4s infinite ease-in-out both;
+}
+
+.bounce-dot:nth-child(2) { animation-delay: 0.16s; }
+.bounce-dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* --- Typewriter cursor --- */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--gold);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 0.8s step-end infinite;
+}
+
+/* --- Page transition overlay --- */
+.page-transition {
+  position: fixed;
+  inset: 0;
+  background: var(--navy-dark);
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.page-transition.active { opacity: 1; pointer-events: all; }
