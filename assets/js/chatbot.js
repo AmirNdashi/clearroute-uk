@@ -429,7 +429,12 @@ async function callWorker(userMessage) {
 
     return reply;
   } catch (error) {
-    console.error('Cloudflare Worker error:', error);
+    // Check if it's a CORS error
+    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+      console.warn('CORS restriction detected - using fallback responses');
+    } else {
+      console.error('Cloudflare Worker error:', error);
+    }
     // Provide helpful fallback responses based on common questions
     const lowerMsg = userMessage.toLowerCase();
     
