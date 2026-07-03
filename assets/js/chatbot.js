@@ -396,31 +396,65 @@ async function callWorker(userMessage) {
   // Add current user message
   messages.push({ role: 'user', content: userMessage });
 
-  const res = await fetch(WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      systemPrompt: SYSTEM_PROMPT,
-      messages,
-    }),
-  });
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemPrompt: SYSTEM_PROMPT,
+        messages,
+      }),
+    });
 
-  if (!res.ok) throw new Error(`Worker error: ${res.status}`);
+    if (!res.ok) {
+      console.error(`Worker returned status: ${res.status}`);
+      throw new Error(`Worker error: ${res.status}`);
+    }
 
-  const data = await res.json();
-  const reply = data.choices?.[0]?.message?.content
-    || "I'm having trouble right now. Please email us at hello@clearrouteuk.co.uk or message us on WhatsApp.";
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content;
 
-  // Save to history
-  conversationHistory.push({ role: 'user',      content: userMessage });
-  conversationHistory.push({ role: 'assistant', content: reply });
+    if (!reply) {
+      throw new Error('No reply from worker');
+    }
 
-  // Keep history manageable — last 20 messages
-  if (conversationHistory.length > 20) {
-    conversationHistory = conversationHistory.slice(-20);
+    // Save to history
+    conversationHistory.push({ role: 'user',      content: userMessage });
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // Keep history manageable — last 20 messages
+    if (conversationHistory.length > 20) {
+      conversationHistory = conversationHistory.slice(-20);
+    }
+
+    return reply;
+  } catch (error) {
+    console.error('Cloudflare Worker error:', error);
+    // Provide helpful fallback responses based on common questions
+    const lowerMsg = userMessage.toLowerCase();
+    
+    if (lowerMsg.includes('licence') || lowerMsg.includes('license') || lowerMsg.includes('driving')) {
+      return "For driving licence conversion, ClearRoute UK helps international clients exchange their foreign licences for UK ones. The process depends on your country of origin. Please contact us at hello@clearrouteuk.co.uk for personalized guidance.";
+    }
+    if (lowerMsg.includes('ni') || lowerMsg.includes('national insurance')) {
+      return "To apply for a National Insurance number, you'll need to apply through the UK government. ClearRoute UK can guide you through the process and help with document preparation. Email us at hello@clearrouteuk.co.uk for assistance.";
+    }
+    if (lowerMsg.includes('brp') || lowerMsg.includes('evisa') || lowerMsg.includes('biometric')) {
+      return "BRP (Biometric Residence Permit) and eVisa guidance is one of our specialties. We help you understand the requirements and process for your specific situation. Contact hello@clearrouteuk.co.uk for expert help.";
+    }
+    if (lowerMsg.includes('theory') || lowerMsg.includes('practical') || lowerMsg.includes('test')) {
+      return "ClearRoute UK can help you book and prepare for both theory and practical driving tests. We provide guidance on requirements, booking process, and preparation. Reach out to hello@clearrouteuk.co.uk for support.";
+    }
+    if (lowerMsg.includes('bank') || lowerMsg.includes('account')) {
+      return "Opening a UK bank account as an international resident can be complex. ClearRoute UK helps you understand the requirements and guides you through the process. Email hello@clearrouteuk.co.uk for assistance.";
+    }
+    if (lowerMsg.includes('address') || lowerMsg.includes('proof')) {
+      return "Address proof is essential for many UK applications. ClearRoute UK helps you understand acceptable documents and how to obtain them if needed. Contact us at hello@clearrouteuk.co.uk.";
+    }
+    
+    // Generic fallback
+    return "I'm currently experiencing technical difficulties with my AI service. For immediate assistance, please email us at hello@clearrouteuk.co.uk or message us on WhatsApp. Our team is ready to help with driving licences, NI numbers, BRP/eVisa, and more.";
   }
-
-  return reply;
 }
 
 /* ════════════════════════════════════════
