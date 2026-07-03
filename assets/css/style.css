@@ -7,25 +7,25 @@
 
 /* --- CSS Variables --- */
 :root {
-  --navy:        #0B1F3A;
-  --navy-light:  #132B52;
-  --navy-dark:   #071428;
-  --gold:        #C9A84C;
-  --gold-light:  #E2C170;
-  --gold-dark:   #A8842A;
+  --navy:        #1F2937;
+  --navy-light:  #374151;
+  --navy-dark:   #111827;
+  --gold:        #F59E0B;
+  --gold-light:  #FBBF24;
+  --gold-dark:   #D97706;
   --white:       #FFFFFF;
-  --off-white:   #F7F9FC;
-  --light-grey:  #EEF1F6;
-  --border:      #DDE3ED;
-  --text-dark:   #1A1A2E;
+  --off-white:   #FAFAFA;
+  --light-grey:  #F3F4F6;
+  --border:      #E5E7EB;
+  --text-dark:   #111827;
   --text-muted:  #6B7280;
   --text-light:  #9CA3AF;
   --success:     #10B981;
   --error:       #EF4444;
   --shadow-sm:   0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md:   0 4px 16px rgba(11,31,58,0.12);
-  --shadow-lg:   0 8px 32px rgba(11,31,58,0.18);
-  --shadow-xl:   0 20px 60px rgba(11,31,58,0.22);
+  --shadow-md:   0 4px 16px rgba(31,41,55,0.12);
+  --shadow-lg:   0 8px 32px rgba(31,41,55,0.18);
+  --shadow-xl:   0 20px 60px rgba(31,41,55,0.22);
   --radius-sm:   6px;
   --radius-md:   12px;
   --radius-lg:   20px;
