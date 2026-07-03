@@ -60,6 +60,13 @@ function showDashboard(user) {
 
 /* ── Login button ── */
 document.getElementById('authBtn').addEventListener('click', async () => {
+  if (!db) {
+    const errEl = document.getElementById('authError');
+    errEl.textContent = 'Database not initialized. Please wait a moment and try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+
   const email    = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const errEl    = document.getElementById('authError');
@@ -90,6 +97,7 @@ document.getElementById('authPassword').addEventListener('keydown', e => {
 
 /* ── Logout ── */
 document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if (!db) return;
   await db.auth.signOut();
 });
 
