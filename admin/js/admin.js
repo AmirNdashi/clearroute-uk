@@ -476,6 +476,12 @@ window.viewEnquiry = async function(enquiryId) {
               </a>
             ` : ''}
           </div>
+
+          <div style="margin-top:16px;">
+            <button onclick="deleteEnquiry('${enquiry.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
+              <i class="fas fa-trash"></i> Delete Enquiry
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -486,6 +492,21 @@ window.viewEnquiry = async function(enquiryId) {
   } catch (e) {
     console.error('View enquiry error:', e);
     alert('Error loading enquiry details');
+  }
+};
+
+window.deleteEnquiry = async function(enquiryId) {
+  if (!confirm('Permanently delete this enquiry? This cannot be undone.')) return;
+  try {
+    const { error } = await db.from('enquiries').delete().eq('id', enquiryId);
+    if (error) throw error;
+    _logAudit('enquiry_deleted', { enquiry_id: enquiryId });
+    alert('Enquiry deleted');
+    loadEnquiries();
+    showPage('enquiries');
+  } catch (e) {
+    console.error('Delete enquiry error:', e);
+    alert('Error deleting enquiry: ' + e.message);
   }
 };
 
@@ -586,10 +607,13 @@ window.loadUsers = async function() {
             ${user.email}
           </div>
         </div>
-        <div style="text-align:right;">
+        <div style="text-align:right;display:flex;align-items:center;gap:10px;">
           <div style="font-size:0.75rem;color:#9CA3AF;">
             ${new Date(user.created_at).toLocaleDateString('en-GB')}
           </div>
+          <button onclick="event.stopPropagation();deleteUser('${user.id}')" class="admin-btn admin-btn-small admin-btn-danger" style="padding:4px 10px;font-size:0.75rem;" title="Delete user">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
     `).join('');
@@ -665,6 +689,12 @@ window.viewUser = async function(userId) {
               </a>
             ` : ''}
           </div>
+
+          <div style="margin-top:16px;">
+            <button onclick="deleteUser('${user.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
+              <i class="fas fa-user-slash"></i> Delete User & All Data
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -675,6 +705,43 @@ window.viewUser = async function(userId) {
   } catch (e) {
     console.error('View user error:', e);
     alert('Error loading user details');
+  }
+};
+
+window.deleteUser = async function(userId) {
+  if (!confirm('Permanently delete this user and ALL their data (applications, documents, notes, chat sessions, messages)? This cannot be undone.')) return;
+  if (!confirm('ARE YOU SURE? This will remove every trace of this user from the system. Type OK to confirm.')) return;
+  try {
+    // Delete application notes
+    const { data: userApps } = await db.from('applications').select('id').eq('user_id', userId);
+    const appIds = userApps?.map(a => a.id) || [];
+    for (const appId of appIds) {
+      await db.from('application_notes').delete().eq('application_id', appId);
+      await db.from('application_documents').delete().eq('application_id', appId);
+    }
+    await db.from('applications').delete().eq('user_id', userId);
+
+    // Delete chat messages & sessions
+    const { data: sessions } = await db.from('chat_sessions').select('id').eq('user_id', userId);
+    const sessIds = sessions?.map(s => s.id) || [];
+    for (const sid of sessIds) {
+      await db.from('chat_messages').delete().eq('session_id', sid);
+      await db.from('admin_replies').delete().eq('session_id', sid);
+      await db.from('admin_queue').delete().eq('session_id', sid);
+    }
+    await db.from('chat_sessions').delete().eq('user_id', userId);
+
+    // Delete profile
+    const { error } = await db.from('profiles').delete().eq('id', userId);
+    if (error) throw error;
+
+    _logAudit('user_deleted', { user_id: userId });
+    alert('User and all associated data deleted');
+    loadUsers();
+    showPage('users');
+  } catch (e) {
+    console.error('Delete user error:', e);
+    alert('Error deleting user: ' + e.message + '\n\nYou may need to delete the user from Supabase Auth dashboard manually.');
   }
 };
 
@@ -954,26 +1021,55 @@ window.viewApplication = async function(applicationId) {
               <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Admin Notes</h4>
               <div style="display:flex;flex-direction:column;gap:12px;">
                 ${notes.map(note => `
-                  <div style="background:#FEF3C7;border-left:4px solid #D4735E;padding:12px;border-radius:4px;">
-                    <div style="font-size:0.82rem;color:#6B7280;margin-bottom:4px;">
-                      ${note.admin_name || 'Admin'} · ${new Date(note.created_at).toLocaleDateString('en-GB')}
+                  <div style="display:flex;align-items:flex-start;gap:8px;background:#FEF3C7;border-left:4px solid #D4735E;padding:12px;border-radius:4px;">
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:0.82rem;color:#6B7280;margin-bottom:4px;">
+                        ${note.admin_name || 'Admin'} · ${new Date(note.created_at).toLocaleDateString('en-GB')}
+                      </div>
+                      <div style="font-size:0.9rem;color:#374151;">${note.note}</div>
                     </div>
-                    <div style="font-size:0.9rem;color:#374151;">${note.note}</div>
+                    <button onclick="deleteAdminNote('${note.id}')" style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:0.85rem;padding:2px;flex-shrink:0;" title="Delete note">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </div>
                 `).join('')}
               </div>
             </div>
           ` : ''}
+
+          <div style="margin-top:16px;">
+            <button onclick="deleteApplication('${application.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
+              <i class="fas fa-trash"></i> Delete Application
+            </button>
+          </div>
         </div>
       </div>
     `;
 
     document.getElementById('applicationDetail').innerHTML = detailHTML;
     showPage('application-detail');
-
   } catch (e) {
     console.error('View application error:', e);
     alert('Error loading application details');
+  }
+};
+
+window.deleteApplication = async function(applicationId) {
+  if (!confirm('Permanently delete this application and all its documents & notes? This cannot be undone.')) return;
+  try {
+    const { error: notesErr } = await db.from('application_notes').delete().eq('application_id', applicationId);
+    if (notesErr) throw notesErr;
+    const { error: docsErr } = await db.from('application_documents').delete().eq('application_id', applicationId);
+    if (docsErr) throw docsErr;
+    const { error: appErr } = await db.from('applications').delete().eq('id', applicationId);
+    if (appErr) throw appErr;
+    _logAudit('application_deleted', { application_id: applicationId });
+    alert('Application deleted');
+    loadApplications();
+    showPage('applications');
+  } catch (e) {
+    console.error('Delete application error:', e);
+    alert('Error deleting application: ' + e.message);
   }
 };
 
@@ -1064,6 +1160,27 @@ window.addAdminNote = async function(applicationId) {
   } catch (e) {
     console.error('Add note error:', e);
     alert('Error adding note');
+  }
+};
+
+window.deleteAdminNote = async function(noteId) {
+  if (!confirm('Delete this note?')) return;
+  try {
+    const { error } = await db.from('application_notes').delete().eq('id', noteId);
+    if (error) throw error;
+    alert('Note deleted');
+    // Refresh the current application view
+    const detailEl = document.getElementById('applicationDetail');
+    if (detailEl) {
+      const appId = detailEl.querySelector('[onclick*="deleteApplication"]');
+      if (appId) {
+        const match = appId.getAttribute('onclick').match(/'([^']+)'/);
+        if (match) viewApplication(match[1]);
+      }
+    }
+  } catch (e) {
+    console.error('Delete note error:', e);
+    alert('Error deleting note');
   }
 };
 
@@ -1268,6 +1385,32 @@ window.loadSessions = async function() {
 /* ════════════════════════════════════════
    OPEN SESSION
 ════════════════════════════════════════ */
+window.deleteSession = async function(sessionId) {
+  if (!confirm('Delete this chat session and all its messages? This cannot be undone.')) return;
+  try {
+    await db.from('chat_messages').delete().eq('session_id', sessionId);
+    await db.from('admin_replies').delete().eq('session_id', sessionId);
+    await db.from('admin_queue').delete().eq('session_id', sessionId);
+    const { error } = await db.from('chat_sessions').delete().eq('id', sessionId);
+    if (error) throw error;
+    _logAudit('chat_session_deleted', { session_id: sessionId });
+    alert('Chat session deleted');
+    currentSess = null;
+    loadSessions();
+    loadDashboardStats();
+    document.getElementById('chatViewPanel').innerHTML = `
+      <div class="chat-empty-state">
+        <i class="fas fa-comments"></i>
+        <h3>Select a conversation</h3>
+        <p>Choose a session from the list to view messages</p>
+      </div>
+    `;
+  } catch (e) {
+    console.error('Delete session error:', e);
+    alert('Error deleting session: ' + e.message);
+  }
+};
+
 async function openSession(sessionId) {
   currentSess = sessionId;
 
@@ -1292,9 +1435,14 @@ async function openSession(sessionId) {
         <div class="chat-view-session-id">${displayName}</div>
         <div class="chat-view-meta">${statusText} · ${session?.page || '/'}</div>
       </div>
-      <button class="admin-btn admin-btn-small admin-btn-success" id="takeOverBtn">
-        <i class="fas fa-headset"></i> Take Over Chat
-      </button>
+      <div style="display:flex;gap:6px;">
+        <button class="admin-btn admin-btn-small admin-btn-success" id="takeOverBtn">
+          <i class="fas fa-headset"></i> Take Over
+        </button>
+        <button class="admin-btn admin-btn-small admin-btn-danger" onclick="deleteSession('${sessionId}')" title="Delete this chat session">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     </div>
     <div class="chat-view-messages" id="adminMsgContainer"></div>
     <div class="visitor-typing" id="visitorTypingIndicator" style="display:none;padding:0 16px 4px;">
