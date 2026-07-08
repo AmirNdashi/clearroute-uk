@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Progress — ClearRoute UK</title>
+  <meta name="description" content="Track your ClearRoute UK application progress and view results." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <link rel="stylesheet" href="assets/css/application-progress.css" />
+</head>
+<body>
+
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-header-inner">
+        <a href="index.html" class="dashboard-brand">ClearRoute UK</a>
+        <div class="dashboard-user-menu">
+          <button class="btn btn-secondary btn-sm" id="backBtn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="progress-main">
+    <div class="container">
+      <div class="progress-layout">
+        
+        <!-- Application Header -->
+        <div class="application-header">
+          <div class="app-header-content">
+            <h1 id="appServiceName">Loading...</h1>
+            <p id="appServiceDescription">Loading application details...</p>
+          </div>
+          <div class="app-header-status">
+            <span class="status-badge status-pending" id="appStatus">Loading...</span>
+            <span class="app-id" id="appId">ID: ---</span>
+          </div>
+        </div>
+
+        <!-- Progress Timeline -->
+        <div class="progress-section">
+          <h2>Application Progress</h2>
+          <div class="progress-timeline" id="progressTimeline">
+            <!-- Dynamic timeline will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Application Details -->
+        <div class="progress-section">
+          <h2>Application Details</h2>
+          <div class="details-grid" id="applicationDetails">
+            <!-- Dynamic details will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="progress-section">
+          <h2>Submitted Documents</h2>
+          <div class="documents-list" id="documentsList">
+            <!-- Dynamic documents will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Admin Notes -->
+        <div class="progress-section" id="adminNotesSection" style="display: none;">
+          <h2>Admin Notes & Updates</h2>
+          <div class="admin-notes" id="adminNotes">
+            <!-- Dynamic admin notes will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Result Section (shown when approved/rejected) -->
+        <div class="progress-section" id="resultSection" style="display: none;">
+          <h2>Application Result</h2>
+          <div class="result-card" id="resultCard">
+            <!-- Dynamic result will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Estimated Completion -->
+        <div class="estimated-completion" id="estimatedCompletion">
+          <i class="fas fa-clock"></i>
+          <div>
+            <span class="label">Estimated Completion:</span>
+            <span class="date" id="estimatedDate">Loading...</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/application-progress.js"></script>
+</body>
+</html>

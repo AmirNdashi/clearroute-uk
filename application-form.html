@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Form — ClearRoute UK</title>
+  <meta name="description" content="Complete your application form for ClearRoute UK documentation services." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <link rel="stylesheet" href="assets/css/application-form.css" />
+</head>
+<body>
+
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-header-inner">
+        <a href="index.html" class="dashboard-brand">ClearRoute UK</a>
+        <div class="dashboard-user-menu">
+          <button class="btn btn-secondary btn-sm" id="backBtn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="application-main">
+    <div class="container">
+      <div class="application-layout">
+        
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div class="step-item active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">Personal Info</div>
+          </div>
+          <div class="step-item" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">Service Details</div>
+          </div>
+          <div class="step-item" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-label">Documents</div>
+          </div>
+          <div class="step-item" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-label">Review</div>
+          </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+          <div class="form-header">
+            <h1 id="formTitle">Application Form</h1>
+            <p id="formSubtitle">Complete the form below to submit your application</p>
+          </div>
+
+          <form id="applicationForm" class="application-form">
+            
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" data-step="1">
+              <h2>Personal Information</h2>
+              <p>Please provide your personal details</p>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="firstName">First Name *</label>
+                  <input type="text" id="firstName" name="firstName" required />
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Last Name *</label>
+                  <input type="text" id="lastName" name="lastName" required />
+                </div>
+                <div class="form-group">
+                  <label for="email">Email Address *</label>
+                  <input type="email" id="email" name="email" required />
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number *</label>
+                  <input type="tel" id="phone" name="phone" required />
+                </div>
+                <div class="form-group">
+                  <label for="dateOfBirth">Date of Birth *</label>
+                  <input type="date" id="dateOfBirth" name="dateOfBirth" required />
+                </div>
+                <div class="form-group">
+                  <label for="nationality">Nationality *</label>
+                  <input type="text" id="nationality" name="nationality" required placeholder="e.g., Nigerian, Indian" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="address">Current Address *</label>
+                  <input type="text" id="address" name="address" required placeholder="Full address including city and country" />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" disabled>Previous</button>
+                <button type="button" class="btn btn-primary next-step-btn">Next Step <i class="fas fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- Step 2: Service Details -->
+            <div class="form-step" data-step="2">
+              <h2>Service Details</h2>
+              <p>Please provide information specific to your selected service</p>
+              
+              <div id="serviceSpecificFields">
+                <!-- Dynamic fields will be loaded here based on service type -->
+              </div>
+
+              <div class="form-group full-width">
+                <label for="additionalInfo">Additional Information</label>
+                <textarea id="additionalInfo" name="additionalInfo" rows="4" placeholder="Any additional details or special requirements..."></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary prev-step-btn"><i class="fas fa-arrow-left"></i> Previous</button>
+                <button type="button" class="btn btn-primary next-step-btn">Next Step <i class="fas fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- Step 3: Document Upload -->
+            <div class="form-step" data-step="3">
+              <h2>Document Upload</h2>
+              <p>Please upload the required documents for your application</p>
+              
+              <div class="document-requirements" id="documentRequirements">
+                <!-- Dynamic document requirements will be loaded here -->
+              </div>
+
+              <div class="upload-section">
+                <div class="form-group">
+                  <label>Passport / ID Document *</label>
+                  <div class="file-upload">
+                    <input type="file" id="passportUpload" name="passport" accept=".pdf,.jpg,.jpeg,.png" required />
+                    <div class="file-upload-label">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <span>Click to upload or drag and drop</span>
+                      <small>PDF, JPG, PNG (Max 10MB)</small>
+                    </div>
+                    <div class="file-upload-preview" id="passportPreview">
+                      <div class="file-info">
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                      </div>
+                      <button type="button" class="remove-file"><i class="fas fa-times"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Proof of Address *</label>
+                  <div class="file-upload">
+                    <input type="file" id="addressUpload" name="addressProof" accept=".pdf,.jpg,.jpeg,.png" required />
+                    <div class="file-upload-label">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <span>Click to upload or drag and drop</span>
+                      <small>PDF, JPG, PNG (Max 10MB)</small>
+                    </div>
+                    <div class="file-upload-preview" id="addressPreview">
+                      <div class="file-info">
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                      </div>
+                      <button type="button" class="remove-file"><i class="fas fa-times"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Additional Document</label>
+                  <div class="file-upload">
+                    <input type="file" id="additionalUpload" name="additionalDoc" accept=".pdf,.jpg,.jpeg,.png" />
+                    <div class="file-upload-label">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <span>Click to upload or drag and drop</span>
+                      <small>PDF, JPG, PNG (Max 10MB)</small>
+                    </div>
+                    <div class="file-upload-preview" id="additionalPreview">
+                      <div class="file-info">
+                        <span class="file-name"></span>
+                        <span class="file-size"></span>
+                      </div>
+                      <button type="button" class="remove-file"><i class="fas fa-times"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary prev-step-btn"><i class="fas fa-arrow-left"></i> Previous</button>
+                <button type="button" class="btn btn-primary next-step-btn">Next Step <i class="fas fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- Step 4: Review & Submit -->
+            <div class="form-step" data-step="4">
+              <h2>Review & Submit</h2>
+              <p>Please review your application before submitting</p>
+              
+              <div class="review-section" id="reviewSection">
+                <!-- Dynamic review content will be loaded here -->
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="confirmAccuracy" required />
+                  <span>I confirm that all information provided is accurate and complete</span>
+                </label>
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="agreeTerms" required />
+                  <span>I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></span>
+                </label>
+              </div>
+
+              <div class="estimated-time">
+                <i class="fas fa-clock"></i>
+                <span>Estimated processing time: <strong id="estimatedTime">2-4 weeks</strong></span>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary prev-step-btn"><i class="fas fa-arrow-left"></i> Previous</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                  <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/application-form.js"></script>
+</body>
+</html>

@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="assets/css/animations.css" />
   <style>
     .legal-hero {
-      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
       padding: 140px 0 70px;
       position: relative;
     }
@@ -23,7 +23,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 80% 40%, rgba(201,168,76,0.06) 0%, transparent 55%);
+      background: radial-gradient(circle at 80% 40%, rgba(212,115,94,0.06) 0%, transparent 55%);
     }
     .legal-hero-content { position: relative; z-index: 1; }
     .legal-hero h1 { color: var(--white); margin-bottom: 12px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
@@ -64,7 +64,7 @@
       transition: var(--transition);
       margin-bottom: 3px;
     }
-    .legal-nav a:hover { background: var(--off-white); color: var(--navy); }
+    .legal-nav a:hover { background: var(--off-white); color: var(--teal); }
 
     .legal-content > section { margin-bottom: 56px; }
     .legal-content h2 {
@@ -99,9 +99,9 @@
       margin-bottom: 6px;
     }
     .legal-highlight {
-      background: rgba(201,168,76,0.06);
-      border: 1px solid rgba(201,168,76,0.2);
-      border-left: 4px solid var(--gold);
+      background: rgba(212,115,94,0.06);
+      border: 1px solid rgba(212,115,94,0.2);
+      border-left: 4px solid var(--copper);
       border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
       padding: 16px 20px;
       margin: 20px 0;
@@ -122,7 +122,7 @@
       color: var(--text-muted);
       margin-bottom: 36px;
     }
-    .legal-updated i { color: var(--gold); }
+    .legal-updated i { color: var(--copper); }
 
     @media (max-width: 768px) {
       .legal-grid { grid-template-columns: 1fr; }
@@ -137,10 +137,7 @@
   <nav class="navbar">
     <div class="container">
       <div class="navbar-inner">
-        <a href="index.html" class="navbar-logo">
-          <img src="assets/images/logo.png" alt="ClearRoute UK Logo" />
-          <div class="navbar-logo-text"><span class="name">ClearRoute UK</span><span class="tagline">Documentation Experts</span></div>
-        </a>
+        <a href="index.html" class="navbar-brand">ClearRoute UK</a>
         <ul class="navbar-nav">
           <li><a href="index.html">Home</a></li>
           <li><a href="services.html">Services</a></li>
@@ -149,7 +146,9 @@
           <li><a href="faq.html">FAQ</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
-        <div class="navbar-cta"><a href="contact.html" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Get Started</a></div>
+        <div class="navbar-cta"><a href="dashboard.html" class="btn btn-primary">
+            <i class="fas fa-rocket"></i>
+            Get Started</a></div>
         <button class="hamburger"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -157,10 +156,6 @@
 
   <div class="mobile-nav">
     <div class="mobile-nav-header">
-      <a href="index.html" class="navbar-logo">
-        <img src="assets/images/logo.png" alt="ClearRoute UK" />
-        <div class="navbar-logo-text"><span class="name">ClearRoute UK</span><span class="tagline">Documentation Experts</span></div>
-      </a>
     </div>
     <a href="index.html"><i class="fas fa-home"></i> Home</a>
     <a href="services.html"><i class="fas fa-briefcase"></i> Services</a>
@@ -168,9 +163,10 @@
     <a href="about.html"><i class="fas fa-users"></i> About Us</a>
     <a href="faq.html"><i class="fas fa-question-circle"></i> FAQ</a>
     <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
-    <a href="contact.html" class="btn btn-primary mt-24" style="justify-content:center;"><i class="fas fa-paper-plane"></i> Get Started</a>
+    <a href="dashboard.html" class="btn btn-primary mt-24" style="justify-content:center;"><i class="fas fa-rocket"></i>
+            Get Started</a>
     <div class="mobile-nav-contact">
-      <a href="mailto:hello@clearrouteuk.co.uk"><i class="fas fa-envelope"></i> hello@clearrouteuk.co.uk</a>
+      <a href="mailto:info@clearoute.uk"><i class="fas fa-envelope"></i> info@clearoute.uk</a>
       <a href="https://wa.me/#" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
     </div>
   </div>
@@ -298,8 +294,8 @@
               <p>If you have any questions about these Terms of Service, please contact us at:</p>
               <p>
                 <strong>ClearRoute UK</strong><br />
-                Email: <a href="mailto:hello@clearrouteuk.co.uk" style="color:var(--navy);">hello@clearrouteuk.co.uk</a><br />
-                Website: <a href="contact.html" style="color:var(--navy);">clearrouteuk.co.uk/contact</a>
+                Email: <a href="mailto:info@clearoute.uk" style="color:var(--teal);">info@clearoute.uk</a><br />
+                Website: <a href="contact.html" style="color:var(--teal);">clearoute.uk/contact</a>
               </p>
             </section>
 
@@ -315,7 +311,7 @@
       <div class="footer-bottom" style="padding:24px 0;">
         <p style="color:rgba(255,255,255,0.35);font-size:0.85rem;">&copy; <span id="footer-year"></span> ClearRoute UK. All rights reserved.</p>
         <div class="footer-bottom-links">
-          <a href="terms.html" style="color:var(--gold);">Terms of Service</a>
+          <a href="terms.html" style="color:var(--copper);">Terms of Service</a>
           <a href="privacy.html">Privacy Policy</a>
           <a href="contact.html">Contact</a>
         </div>

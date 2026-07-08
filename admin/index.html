@@ -22,7 +22,12 @@
       <h2>Sign In</h2>
       <p>Enter your admin credentials to access the dashboard.</p>
       <input type="email"    id="authEmail"    class="admin-input" placeholder="Admin email" />
-      <input type="password" id="authPassword" class="admin-input" placeholder="Password" />
+      <div style="position:relative;width:100%;">
+        <input type="password" id="authPassword" class="admin-input" placeholder="Password" style="padding-right:44px;" />
+        <button type="button" onclick="toggleAdminPassword()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9CA3AF;font-size:1.1rem;padding:4px;line-height:1;" aria-label="Toggle password visibility">
+          <i class="fas fa-eye" id="adminPwIcon"></i>
+        </button>
+      </div>
       <button class="admin-btn admin-btn-primary" id="authBtn">
         <i class="fas fa-lock"></i> Sign In to Dashboard
       </button>
@@ -59,8 +64,15 @@
 
       <div class="admin-sidebar-section">
         <div class="admin-sidebar-section-title">Site</div>
+        <div class="admin-nav-item" data-page="applications">
+          <i class="fas fa-folder-open"></i> Applications
+          <span class="session-badge admin-active" id="sidebarAppsBadge" style="margin-left:auto;display:none;">!</span>
+        </div>
         <div class="admin-nav-item" data-page="enquiries">
           <i class="fas fa-envelope"></i> Enquiries
+        </div>
+        <div class="admin-nav-item" data-page="users">
+          <i class="fas fa-users"></i> Users
         </div>
       </div>
 
@@ -88,7 +100,7 @@
             <span class="admin-notify-dot"></span> System Online
           </span>
           <a href="../index.html" target="blank"
-            style="font-size:0.82rem;color:#0B1F3A;font-weight:600;display:flex;align-items:center;gap:6px;">
+            style="font-size:0.82rem;color:#0D4F4F;font-weight:600;display:flex;align-items:center;gap:6px;">
             <i class="fas fa-external-link-alt"></i> View Site
           </a>
         </div>
@@ -103,14 +115,14 @@
               <div class="label">Active Sessions</div>
               <div class="value" id="statSessions">—</div>
             </div>
-            <div class="icon icon-navy"><i class="fas fa-comments"></i></div>
+            <div class="icon icon-teal"><i class="fas fa-comments"></i></div>
           </div>
           <div class="admin-stat-card">
             <div>
               <div class="label">Pending Handoffs</div>
               <div class="value" id="statHandoffs">—</div>
             </div>
-            <div class="icon icon-gold"><i class="fas fa-headset"></i></div>
+            <div class="icon icon-copper"><i class="fas fa-headset"></i></div>
           </div>
           <div class="admin-stat-card">
             <div>
@@ -130,7 +142,7 @@
 
         <div class="admin-card">
           <div class="admin-card-header">
-            <h3><i class="fas fa-bell" style="color:#C9A84C;margin-right:8px;"></i>Recent Activity</h3>
+            <h3><i class="fas fa-bell" style="color:#D4735E;margin-right:8px;"></i>Recent Activity</h3>
           </div>
           <div style="padding:20px;" id="dashboardActivity">
             <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
@@ -173,17 +185,108 @@
         </div>
       </div>
 
+      <!-- ── APPLICATIONS ── -->
+      <div class="admin-page" id="page-applications">
+        
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-folder-open" style="color:#D4735E;margin-right:8px;"></i>User Applications</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadApplications()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          <div style="padding:20px;" id="applicationsList">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading applications...
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── APPLICATION DETAIL ── -->
+      <div class="admin-page" id="page-application-detail">
+        
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-file-alt" style="color:#D4735E;margin-right:8px;"></i>Application Details</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="showPage('applications')">
+              <i class="fas fa-arrow-left"></i> Back to List
+            </button>
+          </div>
+          <div style="padding:20px;" id="applicationDetail">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Select an application to view details
+            </p>
+          </div>
+        </div>
+
+      </div>
+
       <!-- ── ENQUIRIES ── -->
       <div class="admin-page" id="page-enquiries">
         <div class="admin-card">
           <div class="admin-card-header">
-            <h3>Contact Form Enquiries</h3>
-            <span style="font-size:0.82rem;color:#6B7280;">Received via EmailJS — check your inbox at hello@clearrouteuk.co.uk</span>
+            <h3><i class="fas fa-envelope" style="color:#D4735E;margin-right:8px;"></i>Contact Form Enquiries</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadEnquiries()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
           </div>
-          <div style="padding:40px;text-align:center;color:#9CA3AF;">
-            <i class="fas fa-inbox" style="font-size:2rem;color:#DDE3ED;display:block;margin-bottom:12px;"></i>
-            <p style="font-size:0.9rem;">Contact form submissions are delivered directly to your email via EmailJS.</p>
-            <p style="font-size:0.85rem;margin-top:8px;">Check <strong>hello@clearrouteuk.co.uk</strong> for all enquiries.</p>
+          <div style="padding:20px;" id="enquiriesList">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading enquiries...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ENQUIRY DETAIL ── -->
+      <div class="admin-page" id="page-enquiry-detail">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-envelope-open" style="color:#D4735E;margin-right:8px;"></i>Enquiry Details</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="showPage('enquiries')">
+              <i class="fas fa-arrow-left"></i> Back to List
+            </button>
+          </div>
+          <div style="padding:20px;" id="enquiryDetail">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Select an enquiry to view details
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div class="admin-page" id="page-users">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-users" style="color:#D4735E;margin-right:8px;"></i>Registered Users</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadUsers()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          <div style="padding:20px;" id="usersList">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading users...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USER DETAIL ── -->
+      <div class="admin-page" id="page-user-detail">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-user" style="color:#D4735E;margin-right:8px;"></i>User Details</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="showPage('users')">
+              <i class="fas fa-arrow-left"></i> Back to List
+            </button>
+          </div>
+          <div style="padding:20px;" id="userDetail">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Select a user to view details
+            </p>
           </div>
         </div>
       </div>
@@ -193,5 +296,18 @@
 
   <script src="../assets/js/supabase-config.js"></script>
   <script type="module" src="js/admin.js"></script>
+  <script>
+    function toggleAdminPassword() {
+      const input = document.getElementById('authPassword');
+      const icon = document.getElementById('adminPwIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+  </script>
 </body>
 </html>

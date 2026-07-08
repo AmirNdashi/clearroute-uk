@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ClearRoute UK</title>
+  <meta name="description" content="Your ClearRoute UK dashboard - track your applications and manage your documentation services." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+</head>
+<body>
+
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-header-inner">
+        <a href="index.html" class="dashboard-brand">ClearRoute UK</a>
+        <div class="dashboard-user-menu">
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="user-details">
+              <span class="user-name" id="userName">Loading...</span>
+              <span class="user-email" id="userEmail">Loading...</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <div class="container">
+      <div class="dashboard-layout">
+        
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+          <nav class="dashboard-nav">
+            <div class="nav-item active" data-section="overview">
+              <i class="fas fa-home"></i>
+              <span>Overview</span>
+            </div>
+            <div class="nav-item" data-section="applications">
+              <i class="fas fa-folder-open"></i>
+              <span>My Applications</span>
+            </div>
+            <div class="nav-item" data-section="new-application">
+              <i class="fas fa-plus-circle"></i>
+              <span>New Application</span>
+            </div>
+            <div class="nav-item" data-section="profile">
+              <i class="fas fa-user-cog"></i>
+              <span>Profile Settings</span>
+            </div>
+          </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="dashboard-content">
+          
+          <!-- Overview Section -->
+          <section class="dashboard-section active" id="section-overview">
+            <div class="section-header">
+              <h1>Welcome back, <span id="welcomeName">User</span></h1>
+              <p>Here's an overview of your applications and progress</p>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon stat-icon-teal">
+                  <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="totalApplications">0</div>
+                  <div class="stat-label">Total Applications</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon stat-icon-copper">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="pendingApplications">0</div>
+                  <div class="stat-label">In Progress</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon stat-icon-green">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="completedApplications">0</div>
+                  <div class="stat-label">Completed</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon stat-icon-purple">
+                  <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="uploadedDocuments">0</div>
+                  <div class="stat-label">Documents Uploaded</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="recent-applications">
+              <div class="card-header">
+                <h2>Recent Applications</h2>
+                <a href="#" class="view-all" data-section="applications">View All</a>
+              </div>
+              <div class="applications-list" id="recentApplicationsList">
+                <div class="empty-state">
+                  <i class="fas fa-folder-open"></i>
+                  <p>No applications yet</p>
+                  <a href="#" class="btn btn-primary" data-section="new-application">
+                    <i class="fas fa-plus"></i> Start Your First Application
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Applications Section -->
+          <section class="dashboard-section" id="section-applications">
+            <div class="section-header">
+              <h1>My Applications</h1>
+              <p>Track and manage all your documentation applications</p>
+            </div>
+
+            <div class="applications-list" id="allApplicationsList">
+              <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>No applications yet</p>
+                <a href="#" class="btn btn-primary" data-section="new-application">
+                  <i class="fas fa-plus"></i> Start Your First Application
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <!-- New Application Section -->
+          <section class="dashboard-section" id="section-new-application">
+            <div class="section-header">
+              <h1>Start New Application</h1>
+              <p>Select a service to begin your application process</p>
+            </div>
+
+            <div class="services-grid">
+              <div class="service-select-card" data-service="driving-licence">
+                <div class="service-icon">
+                  <i class="fas fa-car"></i>
+                </div>
+                <h3>Driving Licence Conversion</h3>
+                <p>Convert your foreign driving licence to a UK licence</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 4-8 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="ni-number">
+                <div class="service-icon">
+                  <i class="fas fa-hashtag"></i>
+                </div>
+                <h3>NI Number Application</h3>
+                <p>Apply for your National Insurance number</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 2-4 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="brp-evisa">
+                <div class="service-icon">
+                  <i class="fas fa-id-badge"></i>
+                </div>
+                <h3>BRP / eVisa Guidance</h3>
+                <p>Biometric Residence Permit and eVisa support</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 1-3 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="theory-test">
+                <div class="service-icon">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Theory Test Booking</h3>
+                <p>Book your theory test with study support</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 1-2 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="practical-test">
+                <div class="service-icon">
+                  <i class="fas fa-steering-wheel"></i>
+                </div>
+                <h3>Practical Test Booking</h3>
+                <p>Book your practical driving test</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 2-6 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="address-proof">
+                <div class="service-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <h3>Address Proof Setup</h3>
+                <p>Establish verifiable UK address documentation</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 1-2 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+
+              <div class="service-select-card" data-service="bank-account">
+                <div class="service-icon">
+                  <i class="fas fa-university"></i>
+                </div>
+                <h3>UK Bank Account Setup</h3>
+                <p>Guidance for opening a UK bank account</p>
+                <div class="service-meta">
+                  <span class="badge"><i class="fas fa-clock"></i> 1-2 weeks</span>
+                </div>
+                <button class="btn btn-primary btn-block select-service-btn">
+                  <i class="fas fa-arrow-right"></i> Select Service
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profile Section -->
+          <section class="dashboard-section" id="section-profile">
+            <div class="section-header">
+              <h1>Profile Settings</h1>
+              <p>Manage your account information</p>
+            </div>
+
+            <div class="profile-card">
+              <form id="profileForm" class="profile-form">
+                <div class="form-group">
+                  <label for="profileFirstName">First Name</label>
+                  <input type="text" id="profileFirstName" name="firstName" />
+                </div>
+                <div class="form-group">
+                  <label for="profileLastName">Last Name</label>
+                  <input type="text" id="profileLastName" name="lastName" />
+                </div>
+                <div class="form-group">
+                  <label for="profileEmail">Email</label>
+                  <input type="email" id="profileEmail" name="email" />
+                </div>
+                <div class="form-group">
+                  <label for="profilePhone">Phone Number</label>
+                  <input type="tel" id="profilePhone" name="phone" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Save Changes
+                </button>
+              </form>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>

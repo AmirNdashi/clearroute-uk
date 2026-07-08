@@ -13,7 +13,7 @@
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://www.clearrouteuk.co.uk/" />
+  <meta property="og:url"         content="https://www.clearoute.uk/" />
   <meta property="og:title"       content="ClearRoute UK — Expert UK Documentation Consultancy" />
   <meta property="og:description" content="End-to-end support for driving licence conversion, NI numbers, BRP, and more." />
   <meta property="og:image"       content="assets/images/og-image.jpg" />
@@ -25,7 +25,7 @@
   <meta name="twitter:image"       content="assets/images/og-image.jpg" />
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://www.clearrouteuk.co.uk/" />
+  <link rel="canonical" href="https://www.clearoute.uk/" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
@@ -50,12 +50,11 @@
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://www.clearrouteuk.co.uk/#organization",
+      "@id": "https://www.clearoute.uk/#organization",
       "name": "ClearRoute UK",
-      "url": "https://www.clearrouteuk.co.uk",
-      "logo": "https://www.clearrouteuk.co.uk/assets/images/logo.png",
+      "url": "https://www.clearoute.uk",
       "description": "Expert UK documentation consultancy helping international clients with driving licence conversion, NI numbers, BRP/eVisa guidance, and more.",
-      "email": "hello@clearrouteuk.co.uk",
+      "email": "info@clearoute.uk",
       "sameAs": [
         "#",
         "#",
@@ -78,14 +77,14 @@
     },
     {
       "@type": "WebSite",
-      "@id": "https://www.clearrouteuk.co.uk/#website",
-      "url": "https://www.clearrouteuk.co.uk",
+      "@id": "https://www.clearoute.uk/#website",
+      "url": "https://www.clearoute.uk",
       "name": "ClearRoute UK",
-      "publisher": { "@id": "https://www.clearrouteuk.co.uk/#organization" }
+      "publisher": { "@id": "https://www.clearoute.uk/#organization" }
     },
     {
       "@type": "AggregateRating",
-      "itemReviewed": { "@id": "https://www.clearrouteuk.co.uk/#organization" },
+      "itemReviewed": { "@id": "https://www.clearoute.uk/#organization" },
       "ratingValue": "4.9",
       "reviewCount": "500",
       "bestRating": "5",
@@ -105,13 +104,7 @@
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="navbar-inner">
-        <a href="index.html" class="navbar-logo" aria-label="ClearRoute UK Home">
-          <img src="assets/images/logo.png" alt="ClearRoute UK Logo" />
-          <div class="navbar-logo-text">
-            <span class="name">ClearRoute UK</span>
-            <span class="tagline">Documentation Experts</span>
-          </div>
-        </a>
+        <a href="index.html" class="navbar-brand">ClearRoute UK</a>
         <ul class="navbar-nav" role="list">
           <li><a href="index.html" class="active">Home</a></li>
           <li><a href="services.html">Services</a></li>
@@ -121,8 +114,8 @@
           <li><a href="contact.html">Contact</a></li>
         </ul>
         <div class="navbar-cta">
-          <a href="contact.html" class="btn btn-primary">
-            <i class="fas fa-paper-plane"></i>
+          <a href="dashboard.html" class="btn btn-primary">
+            <i class="fas fa-rocket"></i>
             Get Started
           </a>
         </div>
@@ -136,13 +129,7 @@
   <!-- ========== MOBILE NAV ========== -->
   <div class="mobile-nav" role="dialog" aria-label="Mobile navigation" aria-modal="true">
     <div class="mobile-nav-header">
-      <a href="index.html" class="navbar-logo">
-        <img src="assets/images/logo.png" alt="ClearRoute UK" />
-        <div class="navbar-logo-text">
-          <span class="name">ClearRoute UK</span>
-          <span class="tagline">Documentation Experts</span>
-        </div>
-      </a>
+      <a href="index.html" class="mobile-nav-brand">ClearRoute UK</a>
     </div>
     <a href="index.html"><i class="fas fa-home"></i> Home</a>
     <a href="services.html"><i class="fas fa-briefcase"></i> Services</a>
@@ -150,12 +137,12 @@
     <a href="about.html"><i class="fas fa-users"></i> About Us</a>
     <a href="faq.html"><i class="fas fa-question-circle"></i> FAQ</a>
     <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
-    <a href="contact.html" class="btn btn-primary mt-24" style="justify-content:center;">
-      <i class="fas fa-paper-plane"></i> Get Started Today
+    <a href="dashboard.html" class="btn btn-primary mt-24" style="justify-content:center;">
+      <i class="fas fa-rocket"></i> Get Started Today
     </a>
     <div class="mobile-nav-contact">
-      <a href="mailto:hello@clearrouteuk.co.uk">
-        <i class="fas fa-envelope"></i> hello@clearrouteuk.co.uk
+      <a href="mailto:info@clearoute.uk">
+        <i class="fas fa-envelope"></i> info@clearoute.uk
       </a>
       <a href="https://wa.me/#" target="_blank" rel="noopener">
         <i class="fab fa-whatsapp"></i> WhatsApp Us
@@ -237,7 +224,7 @@
           <div class="hero-card-wrap hero-animate-3">
             <div class="hero-card">
               <div class="hero-card-header">
-                <div class="hero-card-icon pulse-gold">
+                <div class="hero-card-icon pulse-copper">
                   <i class="fas fa-id-card"></i>
                 </div>
                 <div>
@@ -269,10 +256,16 @@
                 </div>
               </div>
 
-              <a href="contact.html" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px;">
-                Request a Free Consultation
-                <i class="fas fa-arrow-right"></i>
-              </a>
+              <div class="hero-card-buttons" style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+                <a href="dashboard.html" class="btn btn-primary" style="width:100%; justify-content:center;">
+                  <i class="fas fa-comments"></i>
+                  Request a Free Consultation
+                </a>
+                <a href="dashboard.html" class="btn btn-secondary" style="width:100%; justify-content:center;">
+                  <i class="fas fa-rocket"></i>
+                  Get Started
+                </a>
+              </div>
 
               <p class="hero-card-note">
                 <i class="fas fa-lock"></i>
@@ -373,7 +366,7 @@
               <h3>Driving Licence Conversion</h3>
               <p>Convert your foreign driving licence to a full UK licence through the DVLA with expert end-to-end guidance.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 4–8 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 4–8 weeks</span>
               </div>
             </div>
             <a href="services/driving-licence-conversion.html" class="btn btn-ghost">
@@ -391,7 +384,7 @@
               <h3>Theory Test Booking & Study Support</h3>
               <p>Booking assistance plus curated study materials — arrive fully prepared and confident on test day.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 1–2 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 1–2 weeks</span>
               </div>
             </div>
             <a href="services/theory-test-booking.html" class="btn btn-ghost">
@@ -409,7 +402,7 @@
               <h3>Practical Test Booking Assistance</h3>
               <p>DVSA-approved instructor referrals and practical driving test slot booking support — stress-free.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 2–6 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 2–6 weeks</span>
               </div>
             </div>
             <a href="services/practical-test-booking.html" class="btn btn-ghost">
@@ -427,7 +420,7 @@
               <h3>NI Number Application Support</h3>
               <p>End-to-end support for your National Insurance number application — done correctly, first time.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 2–4 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 2–4 weeks</span>
               </div>
             </div>
             <a href="services/ni-number-application.html" class="btn btn-ghost">
@@ -445,7 +438,7 @@
               <h3>BRP / eVisa Guidance</h3>
               <p>Biometric Residence Permit and eVisa support — clear guidance from people who know the system inside out.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 1–3 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 1–3 weeks</span>
               </div>
             </div>
             <a href="services/brp-evisa-guidance.html" class="btn btn-ghost">
@@ -463,7 +456,7 @@
               <h3>Address Proof Setup</h3>
               <p>Establish verifiable UK address documentation — essential for banking, DVLA, and government applications.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 1–2 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 1–2 weeks</span>
               </div>
             </div>
             <a href="services/address-proof-setup.html" class="btn btn-ghost">
@@ -481,7 +474,7 @@
               <h3>UK Bank Account Setup Guidance</h3>
               <p>Navigate the UK banking system with confidence — we guide you through requirements and the right account for you.</p>
               <div class="service-card-meta">
-                <span class="badge badge-navy"><i class="fas fa-clock"></i> 1–2 weeks</span>
+                <span class="badge badge-teal"><i class="fas fa-clock"></i> 1–2 weeks</span>
               </div>
             </div>
             <a href="services/uk-bank-account-setup.html" class="btn btn-ghost">
@@ -497,7 +490,7 @@
               </div>
               <h3>Not Sure Where to Start?</h3>
               <p>Book a free consultation and we'll guide you to the right service for your situation.</p>
-              <a href="contact.html" class="btn btn-primary" style="margin-top:24px;">
+              <a href="dashboard.html" class="btn btn-primary" style="margin-top:24px;">
                 <i class="fas fa-paper-plane"></i>
                 Get Free Consultation
               </a>
@@ -606,11 +599,11 @@
     <!-- ======================================================
          SECTION 5: HOW IT WORKS (PROCESS)
          ====================================================== -->
-    <section class="process-section bg-navy" id="process" aria-label="How it works">
+    <section class="process-section bg-teal" id="process" aria-label="How it works">
       <div class="container">
 
         <div class="section-header centered">
-          <span class="section-label reveal" style="color:var(--gold-light);">Simple Process</span>
+          <span class="section-label reveal" style="color:var(--copper-light);">Simple Process</span>
           <h2 class="section-title reveal delay-1" style="color:var(--white);">
             How ClearRoute UK <span>Works</span>
           </h2>
@@ -829,7 +822,7 @@
       <div class="container">
         <div class="cta-inner">
           <div class="cta-content reveal-left">
-            <span class="section-label" style="color:var(--gold-light);">Ready to Begin?</span>
+            <span class="section-label" style="color:var(--copper-light);">Ready to Begin?</span>
             <h2 style="color:var(--white); margin-top:8px;">
               Let's Get Your UK<br />Documentation Sorted
             </h2>
@@ -889,13 +882,8 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="logo-wrap">
-            <img src="assets/images/logo.png" alt="ClearRoute UK" />
-            <div>
-              <div class="name">ClearRoute UK</div>
-              <div class="sub">Documentation Experts</div>
-            </div>
-          </div>
+          <h3>ClearRoute UK</h3>
+          <div class="sub">Documentation Experts</div>
           <p>Expert guidance for international clients navigating UK documentation. From driving licence conversion to NI numbers — we make the process clear, simple, and stress-free.</p>
           <div class="footer-social">
             <a href="#" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -933,7 +921,7 @@
           <h4>Get In Touch</h4>
           <div class="footer-contact-item">
             <div class="icon"><i class="fas fa-envelope"></i></div>
-            <div class="text"><a href="mailto:hello@clearrouteuk.co.uk">hello@clearrouteuk.co.uk</a></div>
+            <div class="text"><a href="mailto:info@clearoute.uk">info@clearoute.uk</a></div>
           </div>
           <div class="footer-contact-item">
             <div class="icon"><i class="fab fa-whatsapp"></i></div>

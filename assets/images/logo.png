@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#0B1F3A"/>
+  <rect width="64" height="64" rx="12" fill="#0D4F4F"/>
   <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
     font-family="Inter, Arial, sans-serif" font-weight="700"
-    font-size="22" fill="#C9A84C">CR</text>
+    font-size="22" fill="#D4735E">CR</text>
 </svg>

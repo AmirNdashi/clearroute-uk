@@ -113,7 +113,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
+      // Send via EmailJS
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+
+      // Also save to Supabase for admin panel
+      if (window._supabase) {
+        try {
+          await window._supabase
+            .from('enquiries')
+            .insert([{
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              email: email.trim(),
+              phone: phone.trim() || null,
+              nationality: nationality.trim(),
+              service: serviceLabels[service] || service,
+              message: message.trim(),
+              status: 'new',
+              created_at: new Date().toISOString()
+            }]);
+        } catch (supabaseError) {
+          console.error('Supabase save error:', supabaseError);
+          // Don't fail the form submission if Supabase fails
+          // This might happen if the enquiries table doesn't exist yet
+          if (supabaseError.code === '42P01') {
+            console.warn('Enquiries table does not exist yet - please run the database schema');
+          }
+        }
+      }
 
       window.showToast?.('Message sent! We\'ll be in touch within 24 hours.', 'success', 6000);
       form.reset();

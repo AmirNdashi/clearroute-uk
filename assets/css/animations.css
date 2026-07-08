@@ -92,13 +92,13 @@
 .float-slow  { animation: floatSlow 6s ease-in-out infinite; }
 .float-delay { animation: float     4s ease-in-out 1s infinite; }
 
-/* --- Pulse Gold --- */
-@keyframes pulseGold {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
-  50%       { box-shadow: 0 0 0 14px rgba(201,168,76,0); }
+/* --- Pulse Copper --- */
+@keyframes pulseCopper {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,115,94,0.4); }
+  50%       { box-shadow: 0 0 0 14px rgba(212,115,94,0); }
 }
 
-.pulse-gold { animation: pulseGold 2.5s ease-in-out infinite; }
+.pulse-copper { animation: pulseCopper 2.5s ease-in-out infinite; }
 
 /* --- Shimmer (loading / skeleton) --- */
 @keyframes shimmer {
@@ -125,7 +125,7 @@
 .counter-num {
   font-family: var(--font-heading);
   font-weight: 800;
-  color: var(--gold);
+  color: var(--copper);
   transition: all 0.3s;
 }
 
@@ -147,7 +147,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--copper);
   animation: bounceDot 1.4s infinite ease-in-out both;
 }
 
@@ -164,7 +164,7 @@
   display: inline-block;
   width: 2px;
   height: 1em;
-  background: var(--gold);
+  background: var(--copper);
   margin-left: 4px;
   vertical-align: middle;
   animation: blink 0.8s step-end infinite;
@@ -174,7 +174,7 @@
 .page-transition {
   position: fixed;
   inset: 0;
-  background: var(--navy-dark);
+  background: var(--teal-dark);
   z-index: 99999;
   pointer-events: none;
   opacity: 0;
