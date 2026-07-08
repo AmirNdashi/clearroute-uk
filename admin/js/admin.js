@@ -77,6 +77,7 @@ function showDashboard(user) {
   document.getElementById('adminAuth').style.display = 'none';
   document.getElementById('adminLayout').classList.add('visible');
   document.getElementById('sidebarUserEmail').textContent = user.email;
+  initSidebarToggle();
   initNotificationSound();
   // Ensure admin profile exists with is_admin = TRUE for RLS
   ensureAdminProfile(user);
@@ -172,6 +173,26 @@ function initNotificationSound() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (Ctx) notifySound = new Ctx();
   } catch (e) {}
+}
+
+function initSidebarToggle() {
+  const toggle = document.getElementById('sidebarToggle');
+  const sidebar = document.querySelector('.admin-sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!toggle || !sidebar || !overlay) return;
+  const close = () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  };
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', close);
+  // Close sidebar on nav click (mobile)
+  sidebar.querySelectorAll('.admin-nav-item').forEach(el => {
+    el.addEventListener('click', close);
+  });
 }
 
 function playNotificationSound() {

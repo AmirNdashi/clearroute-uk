@@ -258,6 +258,17 @@ body.admin-body {
   z-index: 50;
 }
 
+.admin-sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #1A1A2E;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-right: 12px;
+}
+
 .admin-topbar-title {
   font-size: 1.05rem;
   font-weight: 700;
@@ -739,8 +750,26 @@ body.admin-body {
 }
 
 @media (max-width: 768px) {
-  .admin-sidebar { display: none; }
+  .admin-sidebar-toggle { display: flex; }
   .admin-main { margin-left: 0; }
+  .admin-sidebar {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    box-shadow: 0 0 40px rgba(0,0,0,0.3);
+  }
+  .admin-sidebar.open { display: flex; }
+  .admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 150;
+  }
+  .admin-sidebar-overlay.open { display: block; }
   .chat-inbox-layout { grid-template-columns: 1fr; }
   .chat-sessions-list { height: 200px; }
   .admin-stats-grid { grid-template-columns: 1fr 1fr; }
