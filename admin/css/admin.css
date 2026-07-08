@@ -259,7 +259,9 @@ body.admin-body {
 }
 
 .admin-sidebar-toggle {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   font-size: 1.3rem;
@@ -267,6 +269,8 @@ body.admin-body {
   cursor: pointer;
   padding: 4px 8px;
   margin-right: 12px;
+  z-index: 60;
+  position: relative;
 }
 
 .admin-topbar-title {
@@ -750,7 +754,6 @@ body.admin-body {
 }
 
 @media (max-width: 768px) {
-  .admin-sidebar-toggle { display: flex; }
   .admin-main { margin-left: 0; }
   .admin-sidebar {
     display: none;

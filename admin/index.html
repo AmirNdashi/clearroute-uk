@@ -95,7 +95,7 @@
     <main class="admin-main">
 
       <div class="admin-topbar">
-        <button class="admin-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <button class="admin-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" onclick="document.querySelector('.admin-sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');">
           <i class="fas fa-bars"></i>
         </button>
         <div class="admin-topbar-title" id="topbarTitle">Dashboard</div>
