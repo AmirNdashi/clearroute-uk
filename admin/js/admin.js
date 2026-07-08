@@ -252,7 +252,72 @@ document.querySelectorAll('.admin-nav-item[data-page]').forEach(item => {
 /* ════════════════════════════════════════
    ENQUIRIES MANAGEMENT
 ════════════════════════════════════════ */
+let _allEnqs = [];
+let _enqPage = 0;
+const _enqPageSize = 20;
+
+const _enqStatusClasses = {
+  'new': 'background:#FEF3C7;color:#B45309',
+  'contacted': 'background:#DBEAFE;color:#1E40AF',
+  'resolved': 'background:#D1FAE5;color:#047857',
+  'closed': 'background:#FEE2E2;color:#B91C1C'
+};
+
+function _renderEnqCard(enq) {
+  return `
+    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewEnquiry('${enq.id}')">
+      <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+        <i class="fas fa-envelope"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
+          ${enq.first_name} ${enq.last_name}
+        </div>
+        <div style="font-size:0.82rem;color:#6B7280;">
+          ${enq.email} · ${enq.service}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;${_enqStatusClasses[enq.status] || _enqStatusClasses['new']}">
+          ${enq.status.toUpperCase()}
+        </span>
+        <div style="font-size:0.75rem;color:#9CA3AF;margin-top:4px;">
+          ${new Date(enq.created_at).toLocaleDateString('en-GB')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function _getFilteredEnqs() {
+  const search = (document.getElementById('enqSearch').value || '').toLowerCase().trim();
+  const status = document.getElementById('enqStatusFilter').value;
+  return _allEnqs.filter(e => {
+    if (search && !`${e.first_name} ${e.last_name} ${e.email}`.toLowerCase().includes(search)) return false;
+    if (status && e.status !== status) return false;
+    return true;
+  });
+}
+
+function _renderEnqsPage() {
+  const list = document.getElementById('enquiriesList');
+  const filtered = _getFilteredEnqs();
+  const start = 0;
+  const end = (_enqPage + 1) * _enqPageSize;
+  const page = filtered.slice(start, end);
+  const countEl = document.getElementById('enqCount');
+  countEl.textContent = `${filtered.length} enquir${filtered.length !== 1 ? 'ies' : 'y'}`;
+  if (page.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;"></i><p>No enquiries match your filters</p></div>';
+    document.getElementById('enqLoadMoreWrap').style.display = 'none';
+    return;
+  }
+  list.innerHTML = page.map(e => _renderEnqCard(e)).join('');
+  document.getElementById('enqLoadMoreWrap').style.display = end >= filtered.length ? 'none' : 'block';
+}
+
 window.loadEnquiries = async function() {
+  _enqPage = 0;
   const list = document.getElementById('enquiriesList');
   list.innerHTML = '<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:0.85rem;">Loading enquiries...</div>';
 
@@ -264,7 +329,6 @@ window.loadEnquiries = async function() {
 
     if (error) {
       console.error('Enquiries load error:', error);
-      // Check if it's a table not found error - show fallback message
       if (error.code === '42P01') {
         list.innerHTML = `
           <div style="padding:40px;text-align:center;color:#D4735E;">
@@ -286,7 +350,6 @@ window.loadEnquiries = async function() {
         `;
         return;
       }
-      // Check if it's a permission error
       if (error.code === '42501') {
         list.innerHTML = `
           <div style="padding:40px;text-align:center;color:#EF4444;">
@@ -300,41 +363,8 @@ window.loadEnquiries = async function() {
       throw error;
     }
 
-    if (!enquiries || enquiries.length === 0) {
-      list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;"></i><p>No enquiries yet</p></div>';
-      return;
-    }
-
-    const statusClasses = {
-      'new': 'background:#FEF3C7;color:#B45309',
-      'contacted': 'background:#DBEAFE;color:#1E40AF',
-      'resolved': 'background:#D1FAE5;color:#047857',
-      'closed': 'background:#FEE2E2;color:#B91C1C'
-    };
-
-    list.innerHTML = enquiries.map(enq => `
-      <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewEnquiry('${enq.id}')">
-        <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
-          <i class="fas fa-envelope"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-            ${enq.first_name} ${enq.last_name}
-          </div>
-          <div style="font-size:0.82rem;color:#6B7280;">
-            ${enq.email} · ${enq.service}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;${statusClasses[enq.status] || statusClasses['new']}">
-            ${enq.status.toUpperCase()}
-          </span>
-          <div style="font-size:0.75rem;color:#9CA3AF;margin-top:4px;">
-            ${new Date(enq.created_at).toLocaleDateString('en-GB')}
-          </div>
-        </div>
-      </div>
-    `).join('');
+    _allEnqs = enquiries || [];
+    _renderEnqsPage();
 
   } catch (e) {
     console.error('Enquiries error:', e);
@@ -354,6 +384,30 @@ window.loadEnquiries = async function() {
       </div>
     `;
   }
+};
+
+window.filterEnquiries = function() {
+  _enqPage = 0;
+  _renderEnqsPage();
+};
+
+window.loadMoreEnquiries = function() {
+  _enqPage++;
+  _renderEnqsPage();
+};
+
+window.exportEnquiriesCSV = function() {
+  const filtered = _getFilteredEnqs();
+  if (filtered.length === 0) { alert('No enquiries to export'); return; }
+  const header = 'Name,Email,Service,Status,Date,Message\n';
+  const rows = filtered.map(e =>
+    `"${e.first_name} ${e.last_name}","${e.email}","${e.service || ''}","${e.status}","${new Date(e.created_at).toLocaleDateString('en-GB')}","${(e.message || '').replace(/"/g,'""')}"`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'enquiries.csv'; a.click();
+  URL.revokeObjectURL(url);
 };
 
 window.viewEnquiry = async function(enquiryId) {
@@ -450,7 +504,13 @@ window.updateEnquiryStatus = async function(enquiryId) {
       throw new Error('Update failed — admin permission required. Run the updated schema and set is_admin = TRUE on your profile.');
     }
 
+    _logAudit('enquiry_status_change', {
+      enquiry_id: enquiryId,
+      to: newStatus
+    });
+
     alert('Status updated successfully');
+    loadEnquiries();
     viewEnquiry(enquiryId);
 
   } catch (e) {
@@ -493,6 +553,7 @@ window.loadUsers = async function() {
     const { data: users, error } = await db
       .from('profiles')
       .select('*')
+      .neq('is_admin', true)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -620,7 +681,86 @@ window.viewUser = async function(userId) {
 /* ════════════════════════════════════════
    APPLICATIONS MANAGEMENT
 ════════════════════════════════════════ */
+let _allApps = [];
+let _appPage = 0;
+const _appPageSize = 20;
+
+const _serviceNames = {
+  'driving-licence': 'Driving Licence Conversion',
+  'ni-number': 'NI Number Application',
+  'brp-evisa': 'BRP / eVisa Guidance',
+  'theory-test': 'Theory Test Booking',
+  'practical-test': 'Practical Test Booking',
+  'address-proof': 'Address Proof Setup',
+  'bank-account': 'UK Bank Account Setup'
+};
+
+const _statusClasses = {
+  'pending': 'background:#FEF3C7;color:#B45309',
+  'submitted': 'background:#DBEAFE;color:#1E40AF',
+  'in_review': 'background:#DBEAFE;color:#1E40AF',
+  'processing': 'background:#E0E7FF;color:#3730A3',
+  'approved': 'background:#D1FAE5;color:#047857',
+  'rejected': 'background:#FEE2E2;color:#B91C1C'
+};
+
+function _renderAppCard(app) {
+  return `
+    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewApplication('${app.id}')">
+      <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
+          ${_serviceNames[app.service_type] || app.service_type}
+        </div>
+        <div style="font-size:0.82rem;color:#6B7280;">
+          ${app.first_name} ${app.last_name} · ${app.email}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;${_statusClasses[app.status] || _statusClasses['pending']}">
+          ${app.status.replace('_', ' ').toUpperCase()}
+        </span>
+        <div style="font-size:0.75rem;color:#9CA3AF;margin-top:4px;">
+          ${new Date(app.created_at).toLocaleDateString('en-GB')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function _getFilteredApps() {
+  const search = (document.getElementById('appSearch').value || '').toLowerCase().trim();
+  const status = document.getElementById('appStatusFilter').value;
+  const service = document.getElementById('appServiceFilter').value;
+  return _allApps.filter(a => {
+    if (search && !`${a.first_name} ${a.last_name} ${a.email}`.toLowerCase().includes(search)) return false;
+    if (status && a.status !== status) return false;
+    if (service && a.service_type !== service) return false;
+    return true;
+  });
+}
+
+function _renderAppsPage() {
+  const list = document.getElementById('applicationsList');
+  const filtered = _getFilteredApps();
+  const start = 0;
+  const end = (_appPage + 1) * _appPageSize;
+  const page = filtered.slice(start, end);
+  const countEl = document.getElementById('appCount');
+  countEl.textContent = `${filtered.length} application${filtered.length !== 1 ? 's' : ''}`;
+  if (page.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-folder-open" style="font-size:2rem;margin-bottom:12px;"></i><p>No applications match your filters</p></div>';
+    document.getElementById('appLoadMoreWrap').style.display = 'none';
+    return;
+  }
+  list.innerHTML = page.map(a => _renderAppCard(a)).join('');
+  document.getElementById('appLoadMoreWrap').style.display = end >= filtered.length ? 'none' : 'block';
+}
+
 window.loadApplications = async function() {
+  _appPage = 0;
   const list = document.getElementById('applicationsList');
   list.innerHTML = '<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:0.85rem;">Loading applications...</div>';
 
@@ -632,58 +772,47 @@ window.loadApplications = async function() {
 
     if (error) throw error;
 
-    if (!applications || applications.length === 0) {
-      list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-folder-open" style="font-size:2rem;margin-bottom:12px;"></i><p>No applications yet</p></div>';
-      return;
+    _allApps = applications || [];
+    const newCount = _allApps.filter(a => a.status === 'submitted' || a.status === 'pending').length;
+    const badge = document.getElementById('sidebarAppsBadge');
+    if (badge) {
+      if (newCount > 0) {
+        badge.textContent = newCount > 99 ? '99+' : newCount;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
     }
-
-    const serviceNames = {
-      'driving-licence': 'Driving Licence Conversion',
-      'ni-number': 'NI Number Application',
-      'brp-evisa': 'BRP / eVisa Guidance',
-      'theory-test': 'Theory Test Booking',
-      'practical-test': 'Practical Test Booking',
-      'address-proof': 'Address Proof Setup',
-      'bank-account': 'UK Bank Account Setup'
-    };
-
-    const statusClasses = {
-      'pending': 'background:#FEF3C7;color:#B45309',
-      'submitted': 'background:#DBEAFE;color:#1E40AF',
-      'in_review': 'background:#DBEAFE;color:#1E40AF',
-      'processing': 'background:#E0E7FF;color:#3730A3',
-      'approved': 'background:#D1FAE5;color:#047857',
-      'rejected': 'background:#FEE2E2;color:#B91C1C'
-    };
-
-    list.innerHTML = applications.map(app => `
-      <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewApplication('${app.id}')">
-        <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
-          <i class="fas fa-file-alt"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-            ${serviceNames[app.service_type] || app.service_type}
-          </div>
-          <div style="font-size:0.82rem;color:#6B7280;">
-            ${app.first_name} ${app.last_name} · ${app.email}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;${statusClasses[app.status] || statusClasses['pending']}">
-            ${app.status.replace('_', ' ').toUpperCase()}
-          </span>
-          <div style="font-size:0.75rem;color:#9CA3AF;margin-top:4px;">
-            ${new Date(app.created_at).toLocaleDateString('en-GB')}
-          </div>
-        </div>
-      </div>
-    `).join('');
+    _renderAppsPage();
 
   } catch (e) {
     console.error('Applications error:', e);
     list.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:12px;"></i><p>Error loading applications</p></div>';
   }
+};
+
+window.filterApplications = function() {
+  _appPage = 0;
+  _renderAppsPage();
+};
+
+window.loadMoreApplications = function() {
+  _appPage++;
+  _renderAppsPage();
+};
+
+window.exportApplicationsCSV = function() {
+  const filtered = _getFilteredApps();
+  if (filtered.length === 0) { alert('No applications to export'); return; }
+  const header = 'Name,Email,Phone,Service,Status,Date,Nationality,Address\n';
+  const rows = filtered.map(a =>
+    `"${a.first_name} ${a.last_name}","${a.email}","${a.phone || ''}","${_serviceNames[a.service_type] || a.service_type}","${a.status}","${new Date(a.created_at).toLocaleDateString('en-GB')}","${a.nationality}","${(a.address || '').replace(/"/g,'""')}"`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'applications.csv'; a.click();
+  URL.revokeObjectURL(url);
 };
 
 window.viewApplication = async function(applicationId) {
@@ -848,11 +977,28 @@ window.viewApplication = async function(applicationId) {
   }
 };
 
+async function _logAudit(action, details) {
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    await db.from('audit_log').insert({
+      action,
+      details,
+      admin_email: user?.email || 'unknown',
+      created_at: new Date().toISOString()
+    });
+  } catch (e) {
+    console.warn('Audit log failed:', e);
+  }
+}
+
 window.updateApplicationStatus = async function(applicationId) {
   const newStatus = document.getElementById('statusUpdate').value;
   const rejectionReason = document.getElementById('rejectionReason')?.value;
 
   try {
+    const { data: current } = await db.from('applications').select('status').eq('id', applicationId).single();
+    const oldStatus = current?.status || 'unknown';
+
     const updateData = { status: newStatus };
     if (newStatus === 'rejected' && rejectionReason) {
       updateData.rejection_reason = rejectionReason;
@@ -868,6 +1014,13 @@ window.updateApplicationStatus = async function(applicationId) {
     if (!data || data.length === 0) {
       throw new Error('Update failed — admin permission required. Run the updated schema and set is_admin = TRUE on your profile.');
     }
+
+    _logAudit('application_status_change', {
+      application_id: applicationId,
+      from: oldStatus,
+      to: newStatus,
+      rejection_reason: newStatus === 'rejected' ? rejectionReason : null
+    });
 
     alert('Status updated successfully');
     loadApplications();

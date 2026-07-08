@@ -67,7 +67,7 @@
         <div class="admin-sidebar-section-title">Site</div>
         <div class="admin-nav-item" data-page="applications">
           <i class="fas fa-folder-open"></i> Applications
-          <span class="session-badge admin-active" id="sidebarAppsBadge" style="margin-left:auto;display:none;">!</span>
+          <span class="session-badge" id="sidebarAppsBadge" style="margin-left:auto;display:none;">!</span>
         </div>
         <div class="admin-nav-item" data-page="enquiries">
           <i class="fas fa-envelope"></i> Enquiries
@@ -195,14 +195,46 @@
         <div class="admin-card">
           <div class="admin-card-header">
             <h3><i class="fas fa-folder-open" style="color:#D4735E;margin-right:8px;"></i>User Applications</h3>
-            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadApplications()">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
+            <div style="display:flex;gap:8px;">
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="exportApplicationsCSV()" title="Download CSV">
+                <i class="fas fa-download"></i> Export
+              </button>
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadApplications()">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <input type="text" id="appSearch" placeholder="Search name or email..." oninput="filterApplications()" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;" />
+            <select id="appStatusFilter" onchange="filterApplications()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+              <option value="">All Statuses</option>
+              <option value="submitted">Submitted</option>
+              <option value="in_review">In Review</option>
+              <option value="processing">Processing</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <select id="appServiceFilter" onchange="filterApplications()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+              <option value="">All Services</option>
+              <option value="driving-licence">Driving Licence</option>
+              <option value="ni-number">NI Number</option>
+              <option value="brp-evisa">BRP / eVisa</option>
+              <option value="theory-test">Theory Test</option>
+              <option value="practical-test">Practical Test</option>
+              <option value="address-proof">Address Proof</option>
+              <option value="bank-account">Bank Account</option>
+            </select>
+            <span style="font-size:0.8rem;color:#9CA3AF;" id="appCount"></span>
           </div>
           <div style="padding:20px;" id="applicationsList">
             <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
               Loading applications...
             </p>
+          </div>
+          <div id="appLoadMoreWrap" style="padding:0 20px 20px;display:none;text-align:center;">
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadMoreApplications()" id="appLoadMoreBtn">
+              <i class="fas fa-chevron-down"></i> Load More
+            </button>
           </div>
         </div>
 
@@ -232,14 +264,35 @@
         <div class="admin-card">
           <div class="admin-card-header">
             <h3><i class="fas fa-envelope" style="color:#D4735E;margin-right:8px;"></i>Contact Form Enquiries</h3>
-            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadEnquiries()">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
+            <div style="display:flex;gap:8px;">
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="exportEnquiriesCSV()" title="Download CSV">
+                <i class="fas fa-download"></i> Export
+              </button>
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadEnquiries()">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <input type="text" id="enqSearch" placeholder="Search name or email..." oninput="filterEnquiries()" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;" />
+            <select id="enqStatusFilter" onchange="filterEnquiries()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+              <option value="">All Statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+            <span style="font-size:0.8rem;color:#9CA3AF;" id="enqCount"></span>
           </div>
           <div style="padding:20px;" id="enquiriesList">
             <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
               Loading enquiries...
             </p>
+          </div>
+          <div id="enqLoadMoreWrap" style="padding:0 20px 20px;display:none;text-align:center;">
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadMoreEnquiries()" id="enqLoadMoreBtn">
+              <i class="fas fa-chevron-down"></i> Load More
+            </button>
           </div>
         </div>
       </div>
