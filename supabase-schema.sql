@@ -312,6 +312,11 @@ CREATE TABLE IF NOT EXISTS applications (
   service_data JSONB DEFAULT '{}'::jsonb,
   -- Additional information
   additional_info TEXT,
+  -- Pricing information (for PCO licence and other paid services)
+  pricing_info JSONB DEFAULT '{}'::jsonb,
+  -- Payment status
+  payment_status TEXT DEFAULT 'pending',
+  payment_amount DECIMAL(10, 2),
   -- Status tracking
   rejection_reason TEXT,
   estimated_completion TIMESTAMP WITH TIME ZONE,
@@ -377,6 +382,34 @@ BEGIN
     AND column_name = 'additional_doc_file_path'
   ) THEN
     ALTER TABLE application_documents ADD COLUMN additional_doc_file_path TEXT;
+  END IF;
+END $$;
+
+-- Add pricing columns to applications table if they don't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'applications' 
+    AND column_name = 'pricing_info'
+  ) THEN
+    ALTER TABLE applications ADD COLUMN pricing_info JSONB DEFAULT '{}'::jsonb;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'applications' 
+    AND column_name = 'payment_status'
+  ) THEN
+    ALTER TABLE applications ADD COLUMN payment_status TEXT DEFAULT 'pending';
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'applications' 
+    AND column_name = 'payment_amount'
+  ) THEN
+    ALTER TABLE applications ADD COLUMN payment_amount DECIMAL(10, 2);
   END IF;
 END $$;
 
@@ -448,6 +481,21 @@ CREATE TRIGGER update_enquiries_updated_at
 -- Note: Uses DROP IF EXISTS to handle existing triggers safely
 
 -- ============================================================
+-- AUDIT LOG TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS audit_log (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  action TEXT NOT NULL,
+  details JSONB DEFAULT '{}'::jsonb,
+  admin_email TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL
+);
+
+-- Index for faster queries
+CREATE INDEX IF NOT EXISTS audit_log_action_idx ON audit_log(action);
+CREATE INDEX IF NOT EXISTS audit_log_created_at_idx ON audit_log(created_at DESC);
+
+-- ============================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================
 
@@ -457,6 +505,7 @@ ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 -- Users can only see their own profile
@@ -686,6 +735,32 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================
 -- Only info@clearoute.uk should have admin access:
 -- UPDATE profiles SET is_admin = (LOWER(email) = LOWER('info@clearoute.uk'));
+
+-- ============================================================
+-- AUDIT LOG RLS POLICIES
+-- ============================================================
+
+-- Only admins can view audit log
+DROP POLICY IF EXISTS "Admins can view audit log" ON audit_log;
+CREATE POLICY "Admins can view audit log"
+  ON audit_log FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_admin = TRUE
+    )
+  );
+
+-- Only admins can insert into audit log
+DROP POLICY IF EXISTS "Admins can insert audit log" ON audit_log;
+CREATE POLICY "Admins can insert audit log"
+  ON audit_log FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND is_admin = TRUE
+    )
+  );
 
 -- ============================================================
 -- SAMPLE DATA (optional - for testing)

@@ -1038,6 +1038,9 @@ window.viewApplication = async function(applicationId) {
           ` : ''}
 
           <div style="margin-top:16px;">
+            <button onclick="sendPaymentEmail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Send payment instructions to the applicant">
+              <i class="fas fa-envelope-dollar"></i> Send Payment Email
+            </button>
             <button onclick="deleteApplication('${application.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
               <i class="fas fa-trash"></i> Delete Application
             </button>
@@ -1070,6 +1073,41 @@ window.deleteApplication = async function(applicationId) {
   } catch (e) {
     console.error('Delete application error:', e);
     alert('Error deleting application: ' + e.message);
+  }
+};
+
+window.sendPaymentEmail = async function(applicationId) {
+  try {
+    const { data: app, error } = await db.from('applications').select('*').eq('id', applicationId).single();
+    if (error) throw error;
+
+    const pricingInfo = app.pricing_info && Object.keys(app.pricing_info).length > 0 ? app.pricing_info : null;
+    if (!pricingInfo) {
+      const sendAnyway = confirm('This application has no pricing info set. Send generic payment email anyway?');
+      if (!sendAnyway) return;
+    }
+
+    const { data, error: fnError } = await db.functions.invoke('send-application-emails', {
+      body: {
+        application: {
+          id: app.id,
+          firstName: app.first_name,
+          lastName: app.last_name,
+          email: app.email,
+          serviceType: app.service_type,
+          createdAt: app.created_at
+        },
+        pricingInfo,
+        sendPaymentEmail: true
+      }
+    });
+
+    if (fnError) throw fnError;
+    _logAudit('payment_email_sent', { application_id: applicationId });
+    alert('Payment email sent successfully');
+  } catch (e) {
+    console.error('Send payment email error:', e);
+    alert('Error sending payment email: ' + e.message);
   }
 };
 

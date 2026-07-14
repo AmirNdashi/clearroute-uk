@@ -72,7 +72,8 @@ async function loadUserProfile(supabase, userId) {
 }
 
 function setupServiceForm(serviceType) {
-  const serviceConfig = {
+  // Define service config globally
+  window.serviceConfig = {
     'driving-licence': {
       title: 'Driving Licence Conversion Application',
       subtitle: 'Convert your foreign driving licence to a UK licence',
@@ -295,10 +296,60 @@ function setupServiceForm(serviceType) {
         'Proof of income (payslips or tax returns)',
         'Visa or immigration documents'
       ]
+    },
+    'pco-licence': {
+      title: 'PCO Licence Application',
+      subtitle: 'Private Hire Vehicle licence application support',
+      estimatedTime: '8-12 weeks',
+      fields: `
+        <div class="form-group">
+          <label for="pcoPackage">PCO Licence Package *</label>
+          <select id="pcoPackage" name="pcoPackage" required>
+            <option value="">Select package</option>
+            <option value="theory">Theory Test Package - £800 (£400 upfront)</option>
+            <option value="practical">Practical Test Package - £900 (£500 upfront)</option>
+            <option value="full">Full Licence Package - £1,500 (£800 upfront)</option>
+            <option value="complete">Complete PCO Licence - £2,500 (£1,000 upfront)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="drivingExperienceYears">Years of Driving Experience *</label>
+          <input type="number" id="drivingExperienceYears" name="drivingExperienceYears" required min="3" placeholder="Minimum 3 years required" />
+        </div>
+        <div class="form-group">
+          <label for="licenceHeldDuration">How Long Have You Held Your UK Licence? *</label>
+          <input type="number" id="licenceHeldDuration" name="licenceHeldDuration" required min="1" placeholder="In years" />
+        </div>
+        <div class="form-group">
+          <label for="hasDbsCheck">Do You Have an Enhanced DBS Check? *</label>
+          <select id="hasDbsCheck" name="hasDbsCheck" required>
+            <option value="">Select option</option>
+            <option value="yes">Yes, I have a valid DBS check</option>
+            <option value="no">No, I need assistance with DBS check</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label for="pcoAdditionalInfo">Additional Information</label>
+          <textarea id="pcoAdditionalInfo" name="pcoAdditionalInfo" rows="3" placeholder="Any specific requirements or questions about your PCO licence application"></textarea>
+        </div>
+      `,
+      documents: [
+        'Valid UK driving licence (held for at least 3 years)',
+        'Passport or national ID',
+        'Proof of address (utility bill or bank statement)',
+        'Enhanced DBS certificate (if available)',
+        'Medical assessment report (if completed)'
+      ],
+      pricing: {
+        'theory': { total: 800, upfront: 400 },
+        'practical': { total: 900, upfront: 500 },
+        'full': { total: 1500, upfront: 800 },
+        'complete': { total: 2500, upfront: 1000 }
+      }
     }
   };
 
-  const config = serviceConfig[serviceType] || serviceConfig['driving-licence'];
+  const config = window.serviceConfig[serviceType] || window.serviceConfig['driving-licence'];
   
   document.getElementById('formTitle').textContent = config.title;
   document.getElementById('formSubtitle').textContent = config.subtitle;
@@ -326,7 +377,8 @@ function setupMultiStepForm() {
   let completedSteps = new Set(); // Track which steps have been validated
   
   nextBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       if (validateStep(currentStep)) {
         completedSteps.add(currentStep);
         goToStep(currentStep + 1);
@@ -335,7 +387,8 @@ function setupMultiStepForm() {
   });
   
   prevBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       goToStep(currentStep - 1);
     });
   });
@@ -398,13 +451,20 @@ function setupMultiStepForm() {
   
   function validateStep(step) {
     const currentFormStep = document.querySelector(`.form-step[data-step="${step}"]`);
+    if (!currentFormStep) {
+      console.error(`Step ${step} not found`);
+      return false;
+    }
+    
     const requiredFields = currentFormStep.querySelectorAll('[required]');
     let isValid = true;
+    let firstInvalidField = null;
     
     requiredFields.forEach(field => {
-      if (!field.value.trim()) {
+      if (!field.value || !field.value.trim()) {
         isValid = false;
         field.style.borderColor = '#dc2626';
+        if (!firstInvalidField) firstInvalidField = field;
       } else {
         field.style.borderColor = '';
       }
@@ -412,6 +472,10 @@ function setupMultiStepForm() {
     
     if (!isValid) {
       alert('Please fill in all required fields');
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
     
     return isValid;
@@ -474,6 +538,54 @@ function escapeHtml(str) {
 
 function updateReviewSection() {
   const formData = new FormData(document.getElementById('applicationForm'));
+  const serviceType = new URLSearchParams(window.location.search).get('service') || 'driving-licence';
+  
+  // Get pricing information if available
+  let pricingHTML = '';
+  if (serviceType === 'pco-licence') {
+    const pcoPackage = formData.get('pcoPackage');
+    const serviceConfig = window.serviceConfig || {};
+    const pcoConfig = serviceConfig['pco-licence'];
+    
+    if (pcoConfig && pcoConfig.pricing && pcoConfig.pricing[pcoPackage]) {
+      const pricing = pcoConfig.pricing[pcoPackage];
+      const packageNames = {
+        'theory': 'Theory Test Package',
+        'practical': 'Practical Test Package',
+        'full': 'Full Licence Package',
+        'complete': 'Complete PCO Licence'
+      };
+      
+      pricingHTML = `
+        <div class="review-pricing">
+          <h4>Payment Information</h4>
+          <div class="pricing-summary">
+            <div class="pricing-row">
+              <span class="pricing-label">Selected Package</span>
+              <span class="pricing-value">${escapeHtml(packageNames[pcoPackage] || pcoPackage)}</span>
+            </div>
+            <div class="pricing-row">
+              <span class="pricing-label">Total Cost</span>
+              <span class="pricing-value pricing-highlight">£${pricing.total}</span>
+            </div>
+            <div class="pricing-row">
+              <span class="pricing-label">Upfront Payment Required</span>
+              <span class="pricing-value pricing-highlight">£${pricing.upfront}</span>
+            </div>
+            <div class="pricing-row">
+              <span class="pricing-label">Remaining Balance</span>
+              <span class="pricing-value">£${pricing.total - pricing.upfront}</span>
+            </div>
+          </div>
+          <div class="pricing-note">
+            <i class="fas fa-info-circle"></i>
+            <span>You will receive payment instructions via email after your application is submitted.</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+  
   const reviewHTML = `
     <h3>Application Summary</h3>
     <div class="review-item">
@@ -504,6 +616,8 @@ function updateReviewSection() {
       <span class="review-label">Address</span>
       <span class="review-value">${escapeHtml(formData.get('address'))}</span>
     </div>
+    
+    ${pricingHTML}
     
     <div class="review-documents">
       <h4>Documents to be uploaded</h4>
@@ -542,6 +656,8 @@ async function submitApplication(supabase, userId, serviceType) {
         address: formData.get('address'),
         additional_info: formData.get('additionalInfo'),
         service_data: getServiceFormData(formData),
+        pricing_info: getPricingInfo(formData, serviceType),
+        payment_status: 'pending',
         estimated_completion: getEstimatedCompletion(serviceType),
         created_at: new Date().toISOString()
       }])
@@ -618,7 +734,7 @@ async function submitApplication(supabase, userId, serviceType) {
     if (docsError) console.error('Document recording error:', docsError);
     
     // Send notification email (in real implementation)
-    await sendNotificationEmail(application);
+    await sendNotificationEmail(application, formData, serviceType);
     
     alert('Application submitted successfully! You will be redirected to your dashboard.');
     window.location.href = 'dashboard.html';
@@ -652,6 +768,49 @@ function getServiceFormData(formData) {
   return serviceData;
 }
 
+function getPricingInfo(formData, serviceType) {
+  const pricing = {
+    'driving-licence': { total: 1500, upfront: 500 },
+    'pco-licence': { total: 2500, upfront: 1000 }
+  };
+
+  if (serviceType === 'pco-licence') {
+    const pcoPackage = formData.get('pcoPackage');
+    const packageNames = {
+      'theory': 'Theory Test Package',
+      'practical': 'Practical Test Package',
+      'full': 'Full Licence Package',
+      'complete': 'Complete PCO Licence'
+    };
+    const pkgPricing = {
+      'theory': { total: 800, upfront: 400 },
+      'practical': { total: 900, upfront: 500 },
+      'full': { total: 1500, upfront: 800 },
+      'complete': { total: 2500, upfront: 1000 }
+    };
+    if (pkgPricing[pcoPackage]) {
+      return {
+        packageName: packageNames[pcoPackage],
+        packageType: pcoPackage,
+        totalCost: pkgPricing[pcoPackage].total,
+        upfrontPayment: pkgPricing[pcoPackage].upfront,
+        remainingBalance: pkgPricing[pcoPackage].total - pkgPricing[pcoPackage].upfront
+      };
+    }
+  }
+
+  if (pricing[serviceType]) {
+    return {
+      packageName: getServiceDisplayName(serviceType),
+      totalCost: pricing[serviceType].total,
+      upfrontPayment: pricing[serviceType].upfront,
+      remainingBalance: pricing[serviceType].total - pricing[serviceType].upfront
+    };
+  }
+  
+  return {};
+}
+
 function getEstimatedCompletion(serviceType) {
   const estimates = {
     'driving-licence': 42, // 6 weeks
@@ -669,10 +828,48 @@ function getEstimatedCompletion(serviceType) {
   return date.toISOString();
 }
 
-async function sendNotificationEmail(application) {
-  // In a real implementation, this would use a service like SendGrid, Mailgun, or Supabase Edge Functions
-  console.log('Sending notification email for application:', application.id);
-  // Placeholder for email functionality
+async function sendNotificationEmail(application, formData, serviceType) {
+  try {
+    const pricingInfo = getPricingInfo(formData, serviceType);
+    const sendPaymentEmail = Object.keys(pricingInfo).length > 0;
+    
+    const { data, error } = await supabase.functions.invoke('send-application-emails', {
+      body: {
+        application: {
+          id: application.id,
+          firstName: application.first_name,
+          lastName: application.last_name,
+          email: application.email,
+          serviceType: application.service_type,
+          createdAt: application.created_at
+        },
+        pricingInfo: Object.keys(pricingInfo).length > 0 ? pricingInfo : null,
+        sendPaymentEmail: false // Payment email is sent later by admin, not automatically
+      }
+    });
+    
+    if (error) {
+      console.error('Error sending emails:', error);
+    } else {
+      console.log('Emails sent successfully:', data);
+    }
+  } catch (error) {
+    console.error('Error in sendNotificationEmail:', error);
+  }
+}
+
+function getServiceDisplayName(serviceType) {
+  const names = {
+    'driving-licence': 'Driving Licence Conversion',
+    'ni-number': 'NI Number Application',
+    'brp-evisa': 'BRP / eVisa Guidance',
+    'theory-test': 'Theory Test Booking',
+    'practical-test': 'Practical Test Booking',
+    'address-proof': 'Address Proof Setup',
+    'bank-account': 'UK Bank Account Setup',
+    'pco-licence': 'PCO Licence Application'
+  };
+  return names[serviceType] || serviceType;
 }
 
 function formatFileSize(bytes) {
