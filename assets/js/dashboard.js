@@ -341,7 +341,8 @@ function getServiceName(serviceType) {
     'theory-test': 'Theory Test Booking',
     'practical-test': 'Practical Test Booking',
     'address-proof': 'Address Proof Setup',
-    'bank-account': 'UK Bank Account Setup'
+    'bank-account': 'UK Bank Account Setup',
+    'pco-licence': 'PCO Licence Application'
   };
   return services[serviceType] || serviceType;
 }

@@ -542,48 +542,62 @@ function updateReviewSection() {
   
   // Get pricing information if available
   let pricingHTML = '';
-  if (serviceType === 'pco-licence') {
-    const pcoPackage = formData.get('pcoPackage');
-    const serviceConfig = window.serviceConfig || {};
-    const pcoConfig = serviceConfig['pco-licence'];
+  const servicePricing = {
+    'driving-licence': { total: 1500, upfront: 800 },
+    'pco-licence': { total: 2500, upfront: 1000 }
+  };
+  const hasPricing = servicePricing[serviceType];
+  if (hasPricing) {
+    const packageName = getServiceDisplayName(serviceType);
+    const pricing = servicePricing[serviceType];
     
-    if (pcoConfig && pcoConfig.pricing && pcoConfig.pricing[pcoPackage]) {
-      const pricing = pcoConfig.pricing[pcoPackage];
-      const packageNames = {
-        'theory': 'Theory Test Package',
-        'practical': 'Practical Test Package',
-        'full': 'Full Licence Package',
-        'complete': 'Complete PCO Licence'
+    // For PCO, check if a sub-package was selected
+    let displayName = packageName;
+    let displayTotal = pricing.total;
+    let displayUpfront = pricing.upfront;
+    
+    if (serviceType === 'pco-licence') {
+      const pcoPackage = formData.get('pcoPackage');
+      const pkgPricing = {
+        'theory': { total: 800, upfront: 400, name: 'Theory Test Package' },
+        'practical': { total: 900, upfront: 500, name: 'Practical Test Package' },
+        'full': { total: 1500, upfront: 800, name: 'Full Licence Package' },
+        'complete': { total: 2500, upfront: 1000, name: 'Complete PCO Licence' }
       };
-      
-      pricingHTML = `
-        <div class="review-pricing">
-          <h4>Payment Information</h4>
-          <div class="pricing-summary">
-            <div class="pricing-row">
-              <span class="pricing-label">Selected Package</span>
-              <span class="pricing-value">${escapeHtml(packageNames[pcoPackage] || pcoPackage)}</span>
-            </div>
-            <div class="pricing-row">
-              <span class="pricing-label">Total Cost</span>
-              <span class="pricing-value pricing-highlight">£${pricing.total}</span>
-            </div>
-            <div class="pricing-row">
-              <span class="pricing-label">Upfront Payment Required</span>
-              <span class="pricing-value pricing-highlight">£${pricing.upfront}</span>
-            </div>
-            <div class="pricing-row">
-              <span class="pricing-label">Remaining Balance</span>
-              <span class="pricing-value">£${pricing.total - pricing.upfront}</span>
-            </div>
+      if (pkgPricing[pcoPackage]) {
+        displayName = pkgPricing[pcoPackage].name;
+        displayTotal = pkgPricing[pcoPackage].total;
+        displayUpfront = pkgPricing[pcoPackage].upfront;
+      }
+    }
+    
+    pricingHTML = `
+      <div class="review-pricing">
+        <h4>Payment Information</h4>
+        <div class="pricing-summary">
+          <div class="pricing-row">
+            <span class="pricing-label">Service</span>
+            <span class="pricing-value">${escapeHtml(displayName)}</span>
           </div>
-          <div class="pricing-note">
-            <i class="fas fa-info-circle"></i>
-            <span>You will receive payment instructions via email after your application is submitted.</span>
+          <div class="pricing-row">
+            <span class="pricing-label">Total Cost</span>
+            <span class="pricing-value pricing-highlight">£${displayTotal}</span>
+          </div>
+          <div class="pricing-row">
+            <span class="pricing-label">Upfront Payment Required</span>
+            <span class="pricing-value pricing-highlight">£${displayUpfront}</span>
+          </div>
+          <div class="pricing-row">
+            <span class="pricing-label">Remaining Balance</span>
+            <span class="pricing-value">£${displayTotal - displayUpfront}</span>
           </div>
         </div>
-      `;
-    }
+        <div class="pricing-note">
+          <i class="fas fa-info-circle"></i>
+          <span>You will receive payment instructions via email after your application is reviewed.</span>
+        </div>
+      </div>
+    `;
   }
   
   const reviewHTML = `
@@ -756,7 +770,8 @@ function getServiceFormData(formData) {
     'visaType', 'brpExpiryDate', 'brpIssue',
     'testCentre', 'preferredDate', 'licenceNumber', 'testPreparation', 'theoryTestPassDate',
     'addressType', 'moveInDate', 'addressPurpose',
-    'accountType', 'bankingNeeds'
+    'accountType', 'bankingNeeds',
+    'pcoPackage', 'drivingExperienceYears', 'licenceHeldDuration', 'hasDbsCheck', 'pcoAdditionalInfo'
   ];
   
   serviceFields.forEach(field => {
@@ -819,7 +834,8 @@ function getEstimatedCompletion(serviceType) {
     'theory-test': 10, // 1.5 weeks
     'practical-test': 28, // 4 weeks
     'address-proof': 10, // 1.5 weeks
-    'bank-account': 10 // 1.5 weeks
+    'bank-account': 10, // 1.5 weeks
+    'pco-licence': 56 // 8 weeks
   };
   
   const days = estimates[serviceType] || 21;
@@ -831,7 +847,6 @@ function getEstimatedCompletion(serviceType) {
 async function sendNotificationEmail(application, formData, serviceType) {
   try {
     const pricingInfo = getPricingInfo(formData, serviceType);
-    const sendPaymentEmail = Object.keys(pricingInfo).length > 0;
     
     const { data, error } = await supabase.functions.invoke('send-application-emails', {
       body: {
@@ -844,7 +859,7 @@ async function sendNotificationEmail(application, formData, serviceType) {
           createdAt: application.created_at
         },
         pricingInfo: Object.keys(pricingInfo).length > 0 ? pricingInfo : null,
-        sendPaymentEmail: false // Payment email is sent later by admin, not automatically
+        sendPaymentEmail: false
       }
     });
     

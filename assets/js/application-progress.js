@@ -130,7 +130,8 @@ function updateApplicationHeader(application) {
     'theory-test': 'Theory Test Booking',
     'practical-test': 'Practical Test Booking',
     'address-proof': 'Address Proof Setup',
-    'bank-account': 'UK Bank Account Setup'
+    'bank-account': 'UK Bank Account Setup',
+    'pco-licence': 'PCO Licence Application'
   };
 
   document.getElementById('appServiceName').textContent = serviceNames[application.service_type] || application.service_type;

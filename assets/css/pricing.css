@@ -1,0 +1,458 @@
+/* ============================================================
+   CLEARROUTE UK — PRICING STYLES
+   ============================================================ */
+
+.pricing-section {
+  padding: 80px 0;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.pricing-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card-featured {
+  border: 2px solid var(--teal);
+  position: relative;
+}
+
+.featured-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--teal);
+  color: var(--white);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pricing-card-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.pricing-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--white);
+  font-size: 1.5rem;
+}
+
+.pricing-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+.pricing-price {
+  margin: 15px 0;
+}
+
+.price-amount {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+}
+
+.price-upfront {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.pricing-card-body {
+  flex: 1;
+  margin-bottom: 25px;
+}
+
+.pricing-card-body p {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pricing-features li {
+  padding: 10px 0;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.pricing-features li i {
+  color: var(--teal);
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+.pricing-card-footer {
+  margin-top: auto;
+}
+
+/* Review Section Pricing Styles */
+.review-pricing {
+  background: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.review-pricing h4 {
+  margin: 0 0 15px 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.pricing-summary {
+  background: var(--white);
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pricing-row:last-child {
+  border-bottom: none;
+}
+
+.pricing-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.pricing-value {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.pricing-highlight {
+  color: var(--teal);
+  font-size: 1rem;
+}
+
+.pricing-note {
+  margin-top: 15px;
+  padding: 12px;
+  background: #e8f4f8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pricing-note i {
+  color: var(--teal);
+}
+
+/* Service How It Works */
+.service-how-it-works {
+  padding: 80px 0;
+}
+
+.process-steps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.process-step {
+  flex: 1;
+  min-width: 200px;
+  max-width: 250px;
+  text-align: center;
+  padding: 30px 20px;
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s ease;
+}
+
+.process-step:hover {
+  transform: translateY(-5px);
+}
+
+.process-step-num {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--white);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.process-step-icon {
+  font-size: 2rem;
+  color: var(--teal);
+  margin-bottom: 15px;
+}
+
+.process-step h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+.process-step p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.process-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal);
+  font-size: 1.5rem;
+  padding: 20px 10px;
+}
+
+/* Service Requirements */
+.service-requirements {
+  padding: 80px 0;
+}
+
+.requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.requirement-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.requirement-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.requirement-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--copper) 0%, var(--copper-light) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--white);
+  font-size: 1.5rem;
+}
+
+.requirement-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+.requirement-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Service CTA */
+.service-cta {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.service-cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.service-cta h2 {
+  color: var(--white);
+  margin-bottom: 15px;
+}
+
+.service-cta p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.service-cta-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .process-steps {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .process-connector {
+    transform: rotate(90deg);
+  }
+  
+  .requirements-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .service-cta-actions {
+    flex-direction: column;
+  }
+  
+  .service-cta-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Inline Pricing Section for Service Detail Pages */
+.pricing-section-inline {
+  margin-top: 20px;
+}
+
+.pricing-option {
+  background: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.pricing-option:hover {
+  border-color: var(--teal);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pricing-option-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+.pricing-option-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.pricing-option-upfront,
+.pricing-option-remaining {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  margin-bottom: 10px;
+}
+
+.pricing-option-upfront {
+  background: rgba(52, 152, 219, 0.1);
+  border-radius: 6px;
+  padding: 12px 15px;
+}
+
+.upfront-label,
+.remaining-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.upfront-amount {
+  font-weight: 700;
+  color: var(--teal);
+  font-size: 1.1rem;
+}
+
+.remaining-amount {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.pricing-option-features {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.pricing-option-features li {
+  padding: 8px 0;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.pricing-option-features li i {
+  color: var(--teal);
+  margin-right: 10px;
+  font-size: 0.85rem;
+}
