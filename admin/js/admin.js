@@ -940,6 +940,27 @@ window.viewApplication = async function(applicationId) {
             </div>
           </div>
 
+          ${application.service_data && (application.service_data.drivingPackage || application.service_data.pcoPackage) ? `
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Service Details</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
+              <div style="grid-column:1/-1;">
+                <strong>Selected Package:</strong> ${(() => {
+                  const sd = application.service_data;
+                  const pkg = sd.drivingPackage || sd.pcoPackage;
+                  const names = {
+                    'driving-licence': { theory:'Theory Test Support', practical:'Practical Test Support', full:'Full Licence Conversion' },
+                    'pco-licence': { theory:'Theory Test Package', practical:'Practical Test Package', full:'Full Licence Package', complete:'Complete PCO Licence' }
+                  };
+                  const map = names[application.service_type];
+                  const display = map && map[pkg] ? map[pkg] : pkg;
+                  return display || 'N/A';
+                })()}
+              </div>
+            </div>
+          </div>
+          ` : ''}
+
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Personal Information</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">

@@ -80,6 +80,15 @@ function setupServiceForm(serviceType) {
       estimatedTime: '4-8 weeks',
       fields: `
         <div class="form-group">
+          <label for="drivingPackage">Application Type *</label>
+          <select id="drivingPackage" name="drivingPackage" required>
+            <option value="">Select application type</option>
+            <option value="theory">Theory Test Support - £800 (£400 upfront)</option>
+            <option value="practical">Practical Test Support - £900 (£500 upfront)</option>
+            <option value="full">Full Licence Conversion - £1,500 (£800 upfront)</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="foreignLicenceNumber">Foreign Licence Number *</label>
           <input type="text" id="foreignLicenceNumber" name="foreignLicenceNumber" required placeholder="Enter your foreign licence number" />
         </div>
@@ -542,34 +551,11 @@ function updateReviewSection() {
   
   // Get pricing information if available
   let pricingHTML = '';
-  const servicePricing = {
-    'driving-licence': { total: 1500, upfront: 800 },
-    'pco-licence': { total: 2500, upfront: 1000 }
-  };
-  const hasPricing = servicePricing[serviceType];
-  if (hasPricing) {
-    const packageName = getServiceDisplayName(serviceType);
-    const pricing = servicePricing[serviceType];
-    
-    // For PCO, check if a sub-package was selected
-    let displayName = packageName;
-    let displayTotal = pricing.total;
-    let displayUpfront = pricing.upfront;
-    
-    if (serviceType === 'pco-licence') {
-      const pcoPackage = formData.get('pcoPackage');
-      const pkgPricing = {
-        'theory': { total: 800, upfront: 400, name: 'Theory Test Package' },
-        'practical': { total: 900, upfront: 500, name: 'Practical Test Package' },
-        'full': { total: 1500, upfront: 800, name: 'Full Licence Package' },
-        'complete': { total: 2500, upfront: 1000, name: 'Complete PCO Licence' }
-      };
-      if (pkgPricing[pcoPackage]) {
-        displayName = pkgPricing[pcoPackage].name;
-        displayTotal = pkgPricing[pcoPackage].total;
-        displayUpfront = pkgPricing[pcoPackage].upfront;
-      }
-    }
+  const pricingInfo = getPricingInfo(formData, serviceType);
+  if (pricingInfo && pricingInfo.totalCost) {
+    const displayName = pricingInfo.packageName || getServiceDisplayName(serviceType);
+    const displayTotal = pricingInfo.totalCost;
+    const displayUpfront = pricingInfo.upfrontPayment;
     
     pricingHTML = `
       <div class="review-pricing">
@@ -606,6 +592,12 @@ function updateReviewSection() {
       <span class="review-label">Service Type</span>
       <span class="review-value">${escapeHtml(document.getElementById('formTitle').textContent)}</span>
     </div>
+    ${(formData.get('drivingPackage') || formData.get('pcoPackage')) ? `
+    <div class="review-item">
+      <span class="review-label">Package</span>
+      <span class="review-value">${escapeHtml(pricingInfo?.packageName || '')}</span>
+    </div>
+    ` : ''}
     <div class="review-item">
       <span class="review-label">Full Name</span>
       <span class="review-value">${escapeHtml(formData.get('firstName'))} ${escapeHtml(formData.get('lastName'))}</span>
@@ -765,7 +757,7 @@ function getServiceFormData(formData) {
   // Extract service-specific fields
   const serviceData = {};
   const serviceFields = [
-    'foreignLicenceNumber', 'issuingCountry', 'licenceIssueDate', 'licenceExpiryDate', 'drivingExperience',
+    'drivingPackage', 'foreignLicenceNumber', 'issuingCountry', 'licenceIssueDate', 'licenceExpiryDate', 'drivingExperience',
     'employmentStatus', 'employerName', 'reasonForNI',
     'visaType', 'brpExpiryDate', 'brpIssue',
     'testCentre', 'preferredDate', 'licenceNumber', 'testPreparation', 'theoryTestPassDate',
@@ -784,45 +776,56 @@ function getServiceFormData(formData) {
 }
 
 function getPricingInfo(formData, serviceType) {
-  const pricing = {
-    'driving-licence': { total: 1500, upfront: 500 },
-    'pco-licence': { total: 2500, upfront: 1000 }
+  const dlPackageNames = {
+    'theory': 'Theory Test Support',
+    'practical': 'Practical Test Support',
+    'full': 'Full Licence Conversion'
+  };
+  const dlPkgPricing = {
+    'theory': { total: 800, upfront: 400 },
+    'practical': { total: 900, upfront: 500 },
+    'full': { total: 1500, upfront: 800 }
   };
 
-  if (serviceType === 'pco-licence') {
-    const pcoPackage = formData.get('pcoPackage');
-    const packageNames = {
-      'theory': 'Theory Test Package',
-      'practical': 'Practical Test Package',
-      'full': 'Full Licence Package',
-      'complete': 'Complete PCO Licence'
-    };
-    const pkgPricing = {
-      'theory': { total: 800, upfront: 400 },
-      'practical': { total: 900, upfront: 500 },
-      'full': { total: 1500, upfront: 800 },
-      'complete': { total: 2500, upfront: 1000 }
-    };
-    if (pkgPricing[pcoPackage]) {
+  const pcoPackageNames = {
+    'theory': 'Theory Test Package',
+    'practical': 'Practical Test Package',
+    'full': 'Full Licence Package',
+    'complete': 'Complete PCO Licence'
+  };
+  const pcoPkgPricing = {
+    'theory': { total: 800, upfront: 400 },
+    'practical': { total: 900, upfront: 500 },
+    'full': { total: 1500, upfront: 800 },
+    'complete': { total: 2500, upfront: 1000 }
+  };
+
+  if (serviceType === 'driving-licence') {
+    const dlPackage = formData.get('drivingPackage');
+    if (dlPkgPricing[dlPackage]) {
       return {
-        packageName: packageNames[pcoPackage],
-        packageType: pcoPackage,
-        totalCost: pkgPricing[pcoPackage].total,
-        upfrontPayment: pkgPricing[pcoPackage].upfront,
-        remainingBalance: pkgPricing[pcoPackage].total - pkgPricing[pcoPackage].upfront
+        packageName: dlPackageNames[dlPackage],
+        packageType: dlPackage,
+        totalCost: dlPkgPricing[dlPackage].total,
+        upfrontPayment: dlPkgPricing[dlPackage].upfront,
+        remainingBalance: dlPkgPricing[dlPackage].total - dlPkgPricing[dlPackage].upfront
       };
     }
   }
 
-  if (pricing[serviceType]) {
-    return {
-      packageName: getServiceDisplayName(serviceType),
-      totalCost: pricing[serviceType].total,
-      upfrontPayment: pricing[serviceType].upfront,
-      remainingBalance: pricing[serviceType].total - pricing[serviceType].upfront
-    };
+  if (serviceType === 'pco-licence') {
+    const pcoPackage = formData.get('pcoPackage');
+    if (pcoPkgPricing[pcoPackage]) {
+      return {
+        packageName: pcoPackageNames[pcoPackage],
+        packageType: pcoPackage,
+        totalCost: pcoPkgPricing[pcoPackage].total,
+        upfrontPayment: pcoPkgPricing[pcoPackage].upfront,
+        remainingBalance: pcoPkgPricing[pcoPackage].total - pcoPkgPricing[pcoPackage].upfront
+      };
+    }
   }
-  
+
   return {};
 }
 
