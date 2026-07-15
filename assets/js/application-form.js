@@ -739,8 +739,10 @@ async function submitApplication(supabase, userId, serviceType) {
     
     if (docsError) console.error('Document recording error:', docsError);
     
-    // Send notification email (in real implementation)
-    await sendNotificationEmail(application, formData, serviceType);
+    // Send notification email (fire & forget — never blocks submission)
+    sendNotificationEmail(application, formData, serviceType).catch(err => {
+      console.warn('Email sending failed (non-blocking):', err);
+    });
     
     alert('Application submitted successfully! You will be redirected to your dashboard.');
     window.location.href = 'dashboard.html';
