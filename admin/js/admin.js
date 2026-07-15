@@ -179,20 +179,29 @@ function initSidebarToggle() {
   const toggle = document.getElementById('sidebarToggle');
   const sidebar = document.querySelector('.admin-sidebar');
   const overlay = document.getElementById('sidebarOverlay');
+  const icon = document.getElementById('sidebarToggleIcon');
   if (!toggle || !sidebar || !overlay) return;
+  const updateIcon = () => {
+    if (!icon) return;
+    icon.className = sidebar.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+  };
   const close = () => {
     sidebar.classList.remove('open');
     overlay.classList.remove('open');
+    updateIcon();
   };
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
     sidebar.classList.toggle('open');
     overlay.classList.toggle('open');
+    updateIcon();
   });
   overlay.addEventListener('click', close);
-  // Close sidebar on nav click (mobile)
   sidebar.querySelectorAll('.admin-nav-item').forEach(el => {
     el.addEventListener('click', close);
   });
+  // Close sidebar on page load for mobile
+  close();
 }
 
 function playNotificationSound() {
