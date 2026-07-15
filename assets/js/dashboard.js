@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Navigation handling
     setupNavigation();
+    setupMobileNav();
     
     // Logout handler
     document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -377,5 +378,32 @@ function formatDate(dateString) {
     day: 'numeric',
     month: 'short',
     year: 'numeric'
+  });
+}
+
+function setupMobileNav() {
+  const toggle = document.getElementById('dashboardNavToggle');
+  const sidebar = document.querySelector('.dashboard-sidebar');
+  if (!toggle || !sidebar) return;
+
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    toggle.classList.toggle('open');
+    const icon = toggle.querySelector('i');
+    if (icon) {
+      icon.className = sidebar.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+    }
+  });
+
+  // Close sidebar when a nav item is clicked (mobile)
+  sidebar.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('open');
+        toggle.classList.remove('open');
+        const icon = toggle.querySelector('i');
+        if (icon) icon.className = 'fas fa-bars';
+      }
+    });
   });
 }

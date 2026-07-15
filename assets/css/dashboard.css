@@ -470,6 +470,41 @@
   cursor: not-allowed;
 }
 
+/* Mobile Nav Toggle */
+.dashboard-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.dashboard-mobile-toggle:hover {
+  background: var(--teal-dark);
+}
+
+.dashboard-mobile-toggle.open .fa-bars {
+  display: none;
+}
+
+.dashboard-mobile-toggle:not(.open) .fa-times {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .dashboard-layout {
@@ -478,17 +513,20 @@
   
   .dashboard-sidebar {
     position: static;
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
   
   .dashboard-nav {
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 8px;
+    gap: 2px;
   }
   
   .nav-item {
     white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 0.85rem;
   }
   
   .stats-grid {
@@ -500,32 +538,224 @@
   }
 }
 
-@media (max-width: 640px) {
-  .dashboard-header-inner {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 768px) {
+  .dashboard-mobile-toggle {
+    display: flex;
   }
   
-  .dashboard-user-menu {
-    width: 100%;
-    justify-content: space-between;
+  .dashboard-sidebar {
+    display: none;
+  }
+  
+  .dashboard-sidebar.open {
+    display: block;
+    margin-bottom: 16px;
+  }
+  
+  .dashboard-nav {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 4px;
+  }
+  
+  .nav-item {
+    white-space: normal;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .dashboard-content {
+    padding: 20px;
+  }
+  
+  .section-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+  
+  .stat-value {
+    font-size: 1.6rem;
+  }
+  
+  .service-select-card {
+    padding: 20px;
+  }
+  
+  .service-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+  
+  .profile-card {
+    padding: 24px;
+  }
+  
+  .dashboard-main {
+    padding: 20px 0;
+  }
+  
+  .user-details .user-email {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 12px 0;
+  }
+  
+  .dashboard-brand {
+    font-size: 1.15rem;
+  }
+  
+  .dashboard-user-menu .user-info .user-details .user-name {
+    font-size: 0.8rem;
+  }
+  
+  .dashboard-user-menu .btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .dashboard-content {
+    padding: 16px;
+  }
+  
+  .section-header {
+    margin-bottom: 20px;
+  }
+  
+  .section-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .section-header p {
+    font-size: 0.85rem;
   }
   
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+  }
+  
+  .stat-value {
+    font-size: 1.4rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
   }
   
   .services-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .service-select-card {
+    padding: 16px;
+  }
+  
+  .service-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  
+  .service-select-card h3 {
+    font-size: 1rem;
+  }
+  
+  .service-select-card p {
+    font-size: 0.85rem;
   }
   
   .application-card {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .app-service {
+    font-size: 1rem;
+  }
+  
+  .app-id {
+    font-size: 0.75rem;
+  }
+  
+  .app-status {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+  
+  .app-date {
+    font-size: 0.75rem;
   }
   
   .app-actions {
     width: 100%;
-    justify-content: flex-start;
+  }
+  
+  .app-actions .btn-sm {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+  
+  .profile-card {
+    padding: 20px;
+  }
+  
+  .profile-form input {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+  
+  .empty-state {
+    padding: 40px 16px;
+  }
+  
+  .empty-state i {
+    font-size: 2.5rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.95rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.15rem;
   }
 }
