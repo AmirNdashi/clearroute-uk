@@ -244,7 +244,7 @@ document.querySelectorAll('.admin-nav-item[data-page]').forEach(item => {
     item.classList.add('active');
     document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
     document.getElementById(`page-${page}`)?.classList.add('active');
-    const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details' };
+    const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', 'email-inbox': 'Email Inbox', 'email-detail': 'Email Details', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details', settings: 'Settings' };
     document.getElementById('topbarTitle').textContent = titles[page] || 'Dashboard';
     
     // Load page-specific data
@@ -254,9 +254,244 @@ document.querySelectorAll('.admin-nav-item[data-page]').forEach(item => {
       loadEnquiries();
     } else if (page === 'users') {
       loadUsers();
+    } else if (page === 'email-inbox') {
+      loadEmailInbox();
+    } else if (page === 'settings') {
+      loadSettings();
     }
   });
 });
+
+/* ════════════════════════════════════════
+   EMAIL INBOX MANAGEMENT
+════════════════════════════════════════ */
+let _allEmails = [];
+let _emailPage = 0;
+const _emailPageSize = 20;
+
+const _emailStatusClasses = {
+  'unread': 'background:#FEF3C7;color:#B45309',
+  'read': 'background:#DBEAFE;color:#1E40AF',
+  'replied': 'background:#D1FAE5;color:#047857'
+};
+
+function _renderEmailCard(email) {
+  return `
+    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:${email.status === 'unread' ? '#FEF3C7' : '#F9FAFB'};border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;border-left:4px solid ${email.status === 'unread' ? '#D4735E' : 'transparent'};" onclick="viewEmail('${email.id}')">
+      <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+        <i class="fas fa-envelope"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
+          ${email.sender_name}
+        </div>
+        <div style="font-size:0.82rem;color:#6B7280;">
+          ${email.sender_email}
+        </div>
+        <div style="font-size:0.85rem;color:#374151;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${email.subject}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;${_emailStatusClasses[email.status] || _emailStatusClasses['unread']}">
+          ${email.status.toUpperCase()}
+        </span>
+        <div style="font-size:0.75rem;color:#9CA3AF;margin-top:4px;">
+          ${new Date(email.created_at).toLocaleDateString('en-GB')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function _getFilteredEmails() {
+  const search = (document.getElementById('emailSearch').value || '').toLowerCase().trim();
+  const status = document.getElementById('emailStatusFilter').value;
+  return _allEmails.filter(e => {
+    if (search && !`${e.sender_name} ${e.sender_email} ${e.subject}`.toLowerCase().includes(search)) return false;
+    if (status && e.status !== status) return false;
+    return true;
+  });
+}
+
+function _renderEmailsPage() {
+  const list = document.getElementById('emailInboxList');
+  const filtered = _getFilteredEmails();
+  const start = 0;
+  const end = (_emailPage + 1) * _emailPageSize;
+  const page = filtered.slice(start, end);
+  const countEl = document.getElementById('emailCount');
+  countEl.textContent = `${filtered.length} email${filtered.length !== 1 ? 's' : ''}`;
+  if (page.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;"></i><p>No emails match your filters</p></div>';
+    document.getElementById('emailLoadMoreWrap').style.display = 'none';
+    return;
+  }
+  list.innerHTML = page.map(e => _renderEmailCard(e)).join('');
+  document.getElementById('emailLoadMoreWrap').style.display = end >= filtered.length ? 'none' : 'block';
+}
+
+window.loadEmailInbox = async function() {
+  _emailPage = 0;
+  const list = document.getElementById('emailInboxList');
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:0.85rem;">Loading emails...</div>';
+
+  try {
+    const { data: emails, error } = await db
+      .from('applicant_emails')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Emails load error:', error);
+      list.innerHTML = `
+        <div style="padding:40px;text-align:center;color:#EF4444;">
+          <i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:12px;"></i>
+          <p style="font-size:0.9rem;margin-bottom:12px;">Error loading emails</p>
+          <p style="font-size:0.8rem;color:#6B7280;">${error.message || 'Unknown error'}</p>
+        </div>
+      `;
+      return;
+    }
+
+    _allEmails = emails || [];
+    _renderEmailsPage();
+
+  } catch (e) {
+    console.error('Emails error:', e);
+    list.innerHTML = `
+      <div style="padding:40px;text-align:center;color:#EF4444;">
+        <i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:12px;"></i>
+        <p style="font-size:0.9rem;margin-bottom:12px;">Error loading emails</p>
+        <p style="font-size:0.8rem;color:#6B7280;">${e.message || 'Unknown error'}</p>
+      </div>
+    `;
+  }
+};
+
+window.filterEmails = function() {
+  _emailPage = 0;
+  _renderEmailsPage();
+};
+
+window.loadMoreEmails = function() {
+  _emailPage++;
+  _renderEmailsPage();
+};
+
+window.viewEmail = async function(emailId) {
+  try {
+    // Mark as read
+    await db.from('applicant_emails').update({ status: 'read' }).eq('id', emailId);
+
+    const { data: email, error } = await db
+      .from('applicant_emails')
+      .select('*')
+      .eq('id', emailId)
+      .single();
+
+    if (error) throw error;
+
+    const detailHTML = `
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+        <div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Email Information</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
+              <div><strong>From:</strong> ${email.sender_name}</div>
+              <div><strong>Email:</strong> ${email.sender_email}</div>
+              <div><strong>Subject:</strong> ${email.subject}</div>
+              <div><strong>Status:</strong> ${email.status.toUpperCase()}</div>
+              <div><strong>Received:</strong> ${new Date(email.created_at).toLocaleDateString('en-GB')}</div>
+              <div><strong>Email ID:</strong> ${email.id.slice(0, 12)}...</div>
+            </div>
+          </div>
+
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Message</h4>
+            <p style="font-size:0.9rem;color:#374151;line-height:1.6;white-space:pre-wrap;">${email.message}</p>
+          </div>
+        </div>
+
+        <div>
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Update Status</h4>
+            <select id="emailStatusUpdate" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:12px;">
+              <option value="unread" ${email.status === 'unread' ? 'selected' : ''}>Unread</option>
+              <option value="read" ${email.status === 'read' ? 'selected' : ''}>Read</option>
+              <option value="replied" ${email.status === 'replied' ? 'selected' : ''}>Replied</option>
+            </select>
+            <button onclick="updateEmailStatus('${email.id}')" class="admin-btn admin-btn-primary" style="width:100%;">
+              <i class="fas fa-save"></i> Update Status
+            </button>
+          </div>
+
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
+            <button onclick="openEmailModal({recipientId:'${email.id}',recipientType:'applicant_email',email:'${email.sender_email}',name:'${email.sender_name}',subject:'Re: ${email.subject}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
+              <i class="fas fa-reply"></i> Reply via Email
+            </button>
+          </div>
+
+          <div style="margin-top:16px;">
+            <button onclick="deleteEmail('${email.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
+              <i class="fas fa-trash"></i> Delete Email
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('emailDetail').innerHTML = detailHTML;
+    showPage('email-detail');
+    loadEmailInbox(); // Refresh list to update status
+
+  } catch (e) {
+    console.error('View email error:', e);
+    alert('Error loading email details');
+  }
+};
+
+window.updateEmailStatus = async function(emailId) {
+  const newStatus = document.getElementById('emailStatusUpdate').value;
+
+  try {
+    const { data, error } = await db
+      .from('applicant_emails')
+      .update({ status: newStatus })
+      .eq('id', emailId)
+      .select();
+
+    if (error) throw error;
+
+    _logAudit('email_status_change', {
+      email_id: emailId,
+      to: newStatus
+    });
+
+    alert('Status updated successfully');
+    viewEmail(emailId);
+
+  } catch (e) {
+    console.error('Update status error:', e);
+    alert(e.message || 'Error updating status');
+  }
+};
+
+window.deleteEmail = async function(emailId) {
+  if (!confirm('Permanently delete this email? This cannot be undone.')) return;
+  try {
+    const { data, error } = await db.from('applicant_emails').delete().eq('id', emailId).select();
+    if (error) throw error;
+    _logAudit('email_deleted', { email_id: emailId });
+    alert('Email deleted');
+    loadEmailInbox();
+    showPage('email-inbox');
+  } catch (e) {
+    console.error('Delete email error:', e);
+    alert('Error deleting email: ' + e.message);
+  }
+};
 
 /* ════════════════════════════════════════
    ENQUIRIES MANAGEMENT
@@ -658,11 +893,11 @@ window.viewUser = async function(userId) {
       .order('created_at', { ascending: false });
 
     const detailHTML = `
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
-        <div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
-            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">User Profile</h4>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
+      <div class="admin-detail-layout">
+        <div class="admin-detail-main">
+          <div class="admin-detail-section">
+            <h4>User Profile</h4>
+            <div class="admin-detail-grid">
               <div><strong>Name:</strong> ${user.first_name} ${user.last_name || 'N/A'}</div>
               <div><strong>Email:</strong> ${user.email}</div>
               <div><strong>Phone:</strong> ${user.phone || 'Not provided'}</div>
@@ -672,36 +907,36 @@ window.viewUser = async function(userId) {
             </div>
           </div>
 
-          <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
-            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">User Applications (${applications?.length || 0})</h4>
+          <div class="admin-detail-section">
+            <h4>User Applications (${applications?.length || 0})</h4>
             ${applications && applications.length > 0 ? `
-              <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="admin-app-list">
                 ${applications.map(app => `
-                  <div style="padding:12px;background:white;border-radius:6px;border:1px solid #E5E7EB;cursor:pointer;" onclick="viewApplication('${app.id}')">
-                    <div style="font-size:0.85rem;font-weight:700;color:#1A1A2E;">${app.service_type.replace('-', ' ').toUpperCase()}</div>
-                    <div style="font-size:0.75rem;color:#6B7280;">Status: ${app.status.toUpperCase()} · ${new Date(app.created_at).toLocaleDateString('en-GB')}</div>
+                  <div class="admin-app-item" onclick="viewApplication('${app.id}')">
+                    <div class="admin-app-service">${app.service_type.replace('-', ' ').toUpperCase()}</div>
+                    <div class="admin-app-meta">Status: ${app.status.toUpperCase()} · ${new Date(app.created_at).toLocaleDateString('en-GB')}</div>
                   </div>
                 `).join('')}
               </div>
-            ` : '<p style="color:#9CA3AF;font-size:0.85rem;">No applications yet</p>'}
+            ` : '<p class="admin-empty-text">No applications yet</p>'}
           </div>
         </div>
 
-        <div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
-            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
-            <button onclick="openEmailModal({recipientId:'${user.id}',recipientType:'user',email:'${user.email}',name:'${user.first_name} ${user.last_name || ''}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
+        <div class="admin-detail-sidebar">
+          <div class="admin-detail-section">
+            <h4>Quick Actions</h4>
+            <button onclick="openEmailModal({recipientId:'${user.id}',recipientType:'user',email:'${user.email}',name:'${user.first_name} ${user.last_name || ''}'})" class="admin-btn admin-btn-outline admin-btn-block">
               <i class="fas fa-envelope"></i> Send Email
             </button>
             ${user.phone ? `
-              <a href="tel:${user.phone}" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;text-decoration:none;">
+              <a href="tel:${user.phone}" class="admin-btn admin-btn-outline admin-btn-block">
                 <i class="fas fa-phone"></i> Call
               </a>
             ` : ''}
           </div>
 
-          <div style="margin-top:16px;">
-            <button onclick="deleteUser('${user.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
+          <div class="admin-detail-actions">
+            <button onclick="deleteUser('${user.id}')" class="admin-btn admin-btn-danger admin-btn-block">
               <i class="fas fa-user-slash"></i> Delete User & All Data
             </button>
           </div>
@@ -934,10 +1169,10 @@ window.viewApplication = async function(applicationId) {
     };
 
     const detailHTML = `
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
-        <div>
-          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
-            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Application Information</h4>
+      <div class="admin-detail-layout">
+        <div class="admin-detail-main">
+          <div class="admin-detail-section">
+            <h4>Application Information</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
               <div><strong>Service:</strong> ${serviceNames[application.service_type] || application.service_type}</div>
               <div><strong>Status:</strong> ${application.status.toUpperCase()}</div>
@@ -1949,6 +2184,127 @@ window.downloadDocument = async function(filePath) {
   } catch (e) {
     console.error('Download error:', e);
     alert('Error downloading document. Please try again.');
+  }
+};
+
+/* ════════════════════════════════════════
+   SETTINGS MANAGEMENT
+════════════════════════════════════════ */
+
+const DEFAULT_INVOICE_TEMPLATE = `INVOICE
+
+Invoice Number: {{invoice_number}}
+Date: {{invoice_date}}
+
+Client: {{client_name}}
+Service: {{service_name}}
+
+Amount: {{amount}}
+Status: {{status}}
+
+Thank you for your business.`;
+
+window.loadSettings = async function() {
+  try {
+    // Load admin profile
+    const { data: { user } } = await db.auth.getUser();
+    if (user) {
+      const { data: profile } = await db
+        .from('profiles')
+        .select('first_name, last_name, email')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        document.getElementById('settingsFirstName').value = profile.first_name || '';
+        document.getElementById('settingsLastName').value = profile.last_name || '';
+        document.getElementById('settingsEmail').value = profile.email || '';
+      }
+    }
+    
+    // Load invoice template from localStorage or use default
+    const savedTemplate = localStorage.getItem('invoiceTemplate');
+    document.getElementById('invoiceTemplate').value = savedTemplate || DEFAULT_INVOICE_TEMPLATE;
+    
+    // Load system information
+    document.getElementById('systemAdminEmail').textContent = user?.email || '—';
+    
+    const { count: userCount } = await db.from('profiles').select('*', { count: 'exact', head: true });
+    document.getElementById('systemTotalUsers').textContent = userCount || 0;
+    
+    const { count: appCount } = await db.from('applications').select('*', { count: 'exact', head: true });
+    document.getElementById('systemTotalApps').textContent = appCount || 0;
+    
+  } catch (e) {
+    console.error('Load settings error:', e);
+  }
+};
+
+window.saveProfileSettings = async function() {
+  try {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) {
+      alert('No authenticated user found');
+      return;
+    }
+    
+    const firstName = document.getElementById('settingsFirstName').value.trim();
+    const lastName = document.getElementById('settingsLastName').value.trim();
+    
+    if (!firstName || !lastName) {
+      alert('Please enter both first name and last name');
+      return;
+    }
+    
+    const { error } = await db
+      .from('profiles')
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+    
+    if (error) throw error;
+    
+    // Update auth metadata
+    await db.auth.updateUser({
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`
+      }
+    });
+    
+    alert('Profile updated successfully');
+    
+    // Update sidebar display
+    document.getElementById('sidebarUserEmail').textContent = user.email;
+    
+  } catch (e) {
+    console.error('Save profile error:', e);
+    alert('Error saving profile: ' + e.message);
+  }
+};
+
+window.saveInvoiceTemplate = function() {
+  const template = document.getElementById('invoiceTemplate').value.trim();
+  
+  if (!template) {
+    alert('Please enter an invoice template');
+    return;
+  }
+  
+  localStorage.setItem('invoiceTemplate', template);
+  alert('Invoice template saved successfully');
+};
+
+window.resetInvoiceTemplate = function() {
+  if (confirm('Are you sure you want to reset the invoice template to the default?')) {
+    document.getElementById('invoiceTemplate').value = DEFAULT_INVOICE_TEMPLATE;
+    localStorage.removeItem('invoiceTemplate');
+    alert('Invoice template reset to default');
   }
 };
 

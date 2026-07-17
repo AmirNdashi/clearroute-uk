@@ -607,6 +607,20 @@
   .user-details .user-email {
     display: none;
   }
+  
+  .user-info {
+    gap: 8px;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  
+  .user-name {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -618,8 +632,22 @@
     font-size: 1.15rem;
   }
   
-  .dashboard-user-menu .user-info .user-details .user-name {
-    font-size: 0.8rem;
+  .dashboard-user-menu {
+    gap: 8px;
+  }
+  
+  .user-info {
+    gap: 6px;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .user-details {
+    display: none;
   }
   
   .dashboard-user-menu .btn {

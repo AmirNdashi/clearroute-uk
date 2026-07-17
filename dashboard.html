@@ -63,6 +63,10 @@
               <i class="fas fa-plus-circle"></i>
               <span>New Application</span>
             </div>
+            <div class="nav-item" data-section="send-email">
+              <i class="fas fa-envelope"></i>
+              <span>Send Email</span>
+            </div>
             <div class="nav-item" data-section="profile">
               <i class="fas fa-user-cog"></i>
               <span>Profile Settings</span>
@@ -274,6 +278,32 @@
                   <i class="fas fa-arrow-right"></i> Select Service
                 </button>
               </div>
+            </div>
+          </section>
+
+          <!-- Send Email Section -->
+          <section class="dashboard-section" id="section-send-email">
+            <div class="section-header">
+              <h1>Send Email to Admin</h1>
+              <p>Send a message directly to the ClearRoute UK team</p>
+            </div>
+
+            <div class="card">
+              <form id="sendEmailForm" class="email-form">
+                <div class="form-group">
+                  <label for="emailSubject">Subject *</label>
+                  <input type="text" id="emailSubject" name="subject" placeholder="Enter email subject" required />
+                </div>
+                <div class="form-group">
+                  <label for="emailMessage">Message *</label>
+                  <textarea id="emailMessage" name="message" rows="8" placeholder="Type your message here..." required></textarea>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" id="sendEmailBtn">
+                    <i class="fas fa-paper-plane"></i> Send Email
+                  </button>
+                </div>
+              </form>
             </div>
           </section>
 

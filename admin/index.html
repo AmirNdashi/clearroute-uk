@@ -61,6 +61,10 @@
           <i class="fas fa-comments"></i> Live Chat Inbox
           <span class="session-badge admin-active" id="sidebarChatBadge" style="margin-left:auto;display:none;">!</span>
         </div>
+        <div class="admin-nav-item" data-page="email-inbox">
+          <i class="fas fa-inbox"></i> Email Inbox
+          <span class="session-badge" id="sidebarEmailBadge" style="margin-left:auto;display:none;">!</span>
+        </div>
       </div>
 
       <div class="admin-sidebar-section">
@@ -74,6 +78,13 @@
         </div>
         <div class="admin-nav-item" data-page="users">
           <i class="fas fa-users"></i> Users
+        </div>
+      </div>
+
+      <div class="admin-sidebar-section">
+        <div class="admin-sidebar-section-title">Settings</div>
+        <div class="admin-nav-item" data-page="settings">
+          <i class="fas fa-cog"></i> Settings
         </div>
       </div>
 
@@ -186,6 +197,57 @@
             </div>
           </div>
 
+        </div>
+      </div>
+
+      <!-- ── EMAIL INBOX ── -->
+      <div class="admin-page" id="page-email-inbox">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-inbox" style="color:#D4735E;margin-right:8px;"></i>Email Inbox</h3>
+            <div style="display:flex;gap:8px;">
+              <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadEmailInbox()">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <input type="text" id="emailSearch" placeholder="Search sender or subject..." oninput="filterEmails()" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;" />
+            <select id="emailStatusFilter" onchange="filterEmails()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+              <option value="">All Status</option>
+              <option value="unread">Unread</option>
+              <option value="read">Read</option>
+              <option value="replied">Replied</option>
+            </select>
+            <span style="font-size:0.8rem;color:#9CA3AF;" id="emailCount"></span>
+          </div>
+          <div style="padding:20px;" id="emailInboxList">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading emails...
+            </p>
+          </div>
+          <div id="emailLoadMoreWrap" style="padding:0 20px 20px;display:none;text-align:center;">
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadMoreEmails()" id="emailLoadMoreBtn">
+              <i class="fas fa-chevron-down"></i> Load More
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EMAIL DETAIL ── -->
+      <div class="admin-page" id="page-email-detail">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-envelope-open" style="color:#D4735E;margin-right:8px;"></i>Email Details</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="showPage('email-inbox')">
+              <i class="fas fa-arrow-left"></i> Back to Inbox
+            </button>
+          </div>
+          <div style="padding:20px;" id="emailDetail">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Select an email to view details
+            </p>
+          </div>
         </div>
       </div>
 
@@ -344,6 +406,80 @@
             <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
               Select a user to view details
             </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="admin-page" id="page-settings">
+        <div class="admin-card" style="margin-bottom:24px;">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-cog" style="color:#D4735E;margin-right:8px;"></i>Admin Settings</h3>
+          </div>
+          <div style="padding:24px;">
+            <div class="settings-section">
+              <h4>Profile Information</h4>
+              <div class="settings-form">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" id="settingsFirstName" class="admin-input" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" id="settingsLastName" class="admin-input" />
+                </div>
+                <div class="form-group">
+                  <label>Email (Read-only)</label>
+                  <input type="email" id="settingsEmail" class="admin-input" readonly />
+                </div>
+                <button onclick="saveProfileSettings()" class="admin-btn admin-btn-primary">
+                  <i class="fas fa-save"></i> Save Profile
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h4>Payment Invoice Template</h4>
+              <p class="settings-description">Customize the payment invoice template used when copying payment information for applications.</p>
+              <div class="settings-form">
+                <div class="form-group">
+                  <label>Invoice Template</label>
+                  <textarea id="invoiceTemplate" rows="12" class="admin-textarea" placeholder="Enter your invoice template..."></textarea>
+                </div>
+                <div class="template-variables">
+                  <strong>Available Variables:</strong>
+                  <code>{{invoice_number}}</code>, <code>{{invoice_date}}</code>, <code>{{client_name}}</code>, <code>{{service_name}}</code>, <code>{{amount}}</code>, <code>{{status}}</code>
+                </div>
+                <button onclick="saveInvoiceTemplate()" class="admin-btn admin-btn-primary">
+                  <i class="fas fa-save"></i> Save Template
+                </button>
+                <button onclick="resetInvoiceTemplate()" class="admin-btn admin-btn-outline">
+                  <i class="fas fa-undo"></i> Reset to Default
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h4>System Information</h4>
+              <div class="system-info">
+                <div class="info-item">
+                  <span class="info-label">Admin Email:</span>
+                  <span class="info-value" id="systemAdminEmail">—</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Total Users:</span>
+                  <span class="info-value" id="systemTotalUsers">—</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Total Applications:</span>
+                  <span class="info-value" id="systemTotalApps">—</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Database Status:</span>
+                  <span class="info-value status-online">Connected</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

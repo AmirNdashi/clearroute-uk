@@ -64,6 +64,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         await updateProfile(supabase);
       });
     }
+    
+    // Email form handler
+    const emailForm = document.getElementById('sendEmailForm');
+    if (emailForm) {
+      emailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await sendEmailToAdmin(supabase, session.user);
+      });
+    }
   } catch (error) {
     console.error('Dashboard initialization error:', error);
     showErrorMessage('Error loading dashboard. Please refresh the page.');
@@ -330,6 +339,54 @@ async function updateProfile(supabase) {
     location.reload();
   } catch (error) {
     alert('Error updating profile: ' + error.message);
+  }
+}
+
+async function sendEmailToAdmin(supabase, user) {
+  const subject = document.getElementById('emailSubject').value;
+  const message = document.getElementById('emailMessage').value;
+  const sendBtn = document.getElementById('sendEmailBtn');
+  
+  try {
+    // Get user profile data
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    const senderName = profile?.full_name || user?.user_metadata?.full_name || user?.email;
+    const senderEmail = profile?.email || user?.email;
+    
+    // Disable button and show loading state
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    // Insert email into database
+    const { error } = await supabase
+      .from('applicant_emails')
+      .insert([{
+        sender_name: senderName,
+        sender_email: senderEmail,
+        subject: subject,
+        message: message,
+        status: 'unread'
+      }]);
+    
+    if (error) throw error;
+    
+    alert('Email sent successfully!');
+    
+    // Reset form
+    document.getElementById('sendEmailForm').reset();
+    
+  } catch (error) {
+    console.error('Error sending email:', error);
+    alert('Error sending email: ' + error.message);
+  } finally {
+    // Re-enable button
+    sendBtn.disabled = false;
+    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
   }
 }
 

@@ -434,6 +434,33 @@ CREATE INDEX IF NOT EXISTS application_notes_application_id_idx ON application_n
 CREATE INDEX IF NOT EXISTS application_notes_created_at_idx ON application_notes(created_at DESC);
 
 -- ============================================================
+-- APPLICANT EMAILS TABLE (for emails sent by applicants)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS applicant_emails (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  sender_name TEXT NOT NULL,
+  sender_email TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'unread' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS applicant_emails_status_idx ON applicant_emails(status);
+CREATE INDEX IF NOT EXISTS applicant_emails_created_at_idx ON applicant_emails(created_at DESC);
+CREATE INDEX IF NOT EXISTS applicant_emails_sender_email_idx ON applicant_emails(sender_email);
+
+-- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_applicant_emails_updated_at ON applicant_emails;
+
+CREATE TRIGGER update_applicant_emails_updated_at
+  BEFORE UPDATE ON applicant_emails
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
 -- ENQUIRIES TABLE (for contact form submissions)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS enquiries (
@@ -504,6 +531,7 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE applicant_emails ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
@@ -659,6 +687,28 @@ CREATE POLICY "Admins can update enquiries"
 DROP POLICY IF EXISTS "Admins can delete enquiries" ON enquiries;
 CREATE POLICY "Admins can delete enquiries"
   ON enquiries FOR DELETE
+  USING (public.is_admin());
+
+-- Applicant emails policies
+DROP POLICY IF EXISTS "Anyone can submit applicant emails" ON applicant_emails;
+CREATE POLICY "Anyone can submit applicant emails"
+  ON applicant_emails FOR INSERT
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Admins can view all applicant emails" ON applicant_emails;
+CREATE POLICY "Admins can view all applicant emails"
+  ON applicant_emails FOR SELECT
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can update applicant emails" ON applicant_emails;
+CREATE POLICY "Admins can update applicant emails"
+  ON applicant_emails FOR UPDATE
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete applicant emails" ON applicant_emails;
+CREATE POLICY "Admins can delete applicant emails"
+  ON applicant_emails FOR DELETE
   USING (public.is_admin());
 
 -- Admin profile access (for user management)
