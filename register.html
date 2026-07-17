@@ -15,12 +15,21 @@
 
     <link rel="preconnect" href="https://lxbsdgvzdqptdatluxlg.supabase.co" crossorigin />
     <style>
+      /* Fix input icon overlap — use flex instead of absolute positioning */
+      .auth-form .input-wrapper { display: flex !important; align-items: center; gap: 10px; }
+      .auth-form .input-wrapper .input-icon { position: static !important; flex-shrink: 0; }
+      .auth-form input[type="text"],
+      .auth-form input[type="email"],
+      .auth-form input[type="tel"],
+      .auth-form input[type="password"] { padding-left: 0 !important; flex: 1; min-width: 0; }
+      .auth-form input[type="password"].has-toggle,
+      .auth-form input[type="text"].has-toggle { padding-right: 48px !important; }
       @media (max-width:480px) {
-        .input-wrapper .input-icon { font-size: 0.85rem; left: 12px; }
+        .auth-form .input-wrapper .input-icon { font-size: 0.85rem; }
         .auth-form input[type="text"],
         .auth-form input[type="email"],
         .auth-form input[type="tel"],
-        .auth-form input[type="password"] { padding: 12px 14px 12px 38px; font-size: 0.85rem; }
+        .auth-form input[type="password"] { font-size: 0.85rem; padding: 12px 14px 12px 0; }
         .password-toggle { right: 8px; font-size: 0.95rem; }
       }
     </style>

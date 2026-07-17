@@ -567,6 +567,11 @@ CREATE POLICY "Admins can update all applications"
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can delete applications" ON applications;
+CREATE POLICY "Admins can delete applications"
+  ON applications FOR DELETE
+  USING (public.is_admin());
+
 -- Note: Uses DROP POLICY IF EXISTS to handle existing policies safely
 
 -- Application documents policies
@@ -599,6 +604,11 @@ CREATE POLICY "Admins can view all application documents"
   ON application_documents FOR SELECT
   USING (public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can delete application documents" ON application_documents;
+CREATE POLICY "Admins can delete application documents"
+  ON application_documents FOR DELETE
+  USING (public.is_admin());
+
 -- Note: Uses DROP POLICY IF EXISTS to handle existing policies safely
 
 -- Application notes policies
@@ -624,6 +634,11 @@ CREATE POLICY "Admins can insert application notes"
   ON application_notes FOR INSERT
   WITH CHECK (public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can delete application notes" ON application_notes;
+CREATE POLICY "Admins can delete application notes"
+  ON application_notes FOR DELETE
+  USING (public.is_admin());
+
 -- Enquiries policies
 DROP POLICY IF EXISTS "Anyone can submit enquiries" ON enquiries;
 CREATE POLICY "Anyone can submit enquiries"
@@ -641,10 +656,40 @@ CREATE POLICY "Admins can update enquiries"
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can delete enquiries" ON enquiries;
+CREATE POLICY "Admins can delete enquiries"
+  ON enquiries FOR DELETE
+  USING (public.is_admin());
+
 -- Admin profile access (for user management)
 DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 CREATE POLICY "Admins can view all profiles"
   ON profiles FOR SELECT
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete profiles" ON profiles;
+CREATE POLICY "Admins can delete profiles"
+  ON profiles FOR DELETE
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete chat sessions" ON chat_sessions;
+CREATE POLICY "Admins can delete chat sessions"
+  ON chat_sessions FOR DELETE
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete chat messages" ON chat_messages;
+CREATE POLICY "Admins can delete chat messages"
+  ON chat_messages FOR DELETE
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete admin replies" ON admin_replies;
+CREATE POLICY "Admins can delete admin replies"
+  ON admin_replies FOR DELETE
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete admin queue" ON admin_queue;
+CREATE POLICY "Admins can delete admin queue"
+  ON admin_queue FOR DELETE
   USING (public.is_admin());
 
 -- Note: Uses DROP POLICY IF EXISTS to handle existing policies safely

@@ -507,8 +507,9 @@ window.viewEnquiry = async function(enquiryId) {
 window.deleteEnquiry = async function(enquiryId) {
   if (!confirm('Permanently delete this enquiry? This cannot be undone.')) return;
   try {
-    const { error } = await db.from('enquiries').delete().eq('id', enquiryId);
+    const { data, error } = await db.from('enquiries').delete().eq('id', enquiryId).select();
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
     _logAudit('enquiry_deleted', { enquiry_id: enquiryId });
     alert('Enquiry deleted');
     loadEnquiries();
@@ -725,24 +726,29 @@ window.deleteUser = async function(userId) {
     const { data: userApps } = await db.from('applications').select('id').eq('user_id', userId);
     const appIds = userApps?.map(a => a.id) || [];
     for (const appId of appIds) {
-      await db.from('application_notes').delete().eq('application_id', appId);
-      await db.from('application_documents').delete().eq('application_id', appId);
+      const { data: nd, error: ne } = await db.from('application_notes').delete().eq('application_id', appId).select();
+      if (ne) throw ne;
+      const { data: dd, error: de } = await db.from('application_documents').delete().eq('application_id', appId).select();
+      if (de) throw de;
     }
-    await db.from('applications').delete().eq('user_id', userId);
+    const { data: ad, error: ae } = await db.from('applications').delete().eq('user_id', userId).select();
+    if (ae) throw ae;
 
     // Delete chat messages & sessions
     const { data: sessions } = await db.from('chat_sessions').select('id').eq('user_id', userId);
     const sessIds = sessions?.map(s => s.id) || [];
     for (const sid of sessIds) {
-      await db.from('chat_messages').delete().eq('session_id', sid);
-      await db.from('admin_replies').delete().eq('session_id', sid);
-      await db.from('admin_queue').delete().eq('session_id', sid);
+      await db.from('chat_messages').delete().eq('session_id', sid).select();
+      await db.from('admin_replies').delete().eq('session_id', sid).select();
+      await db.from('admin_queue').delete().eq('session_id', sid).select();
     }
-    await db.from('chat_sessions').delete().eq('user_id', userId);
+    const { data: sd, error: se } = await db.from('chat_sessions').delete().eq('user_id', userId).select();
+    if (se) throw se;
 
     // Delete profile
-    const { error } = await db.from('profiles').delete().eq('id', userId);
-    if (error) throw error;
+    const { data: pd, error: pe } = await db.from('profiles').delete().eq('id', userId).select();
+    if (pe) throw pe;
+    if (!pd || pd.length === 0) throw new Error('Profile delete failed — admin RLS permission missing. Run the updated schema.');
 
     _logAudit('user_deleted', { user_id: userId });
     alert('User and all associated data deleted');
@@ -1093,12 +1099,13 @@ window.viewApplication = async function(applicationId) {
 window.deleteApplication = async function(applicationId) {
   if (!confirm('Permanently delete this application and all its documents & notes? This cannot be undone.')) return;
   try {
-    const { error: notesErr } = await db.from('application_notes').delete().eq('application_id', applicationId);
+    const { data: notesData, error: notesErr } = await db.from('application_notes').delete().eq('application_id', applicationId).select();
     if (notesErr) throw notesErr;
-    const { error: docsErr } = await db.from('application_documents').delete().eq('application_id', applicationId);
+    const { data: docsData, error: docsErr } = await db.from('application_documents').delete().eq('application_id', applicationId).select();
     if (docsErr) throw docsErr;
-    const { error: appErr } = await db.from('applications').delete().eq('id', applicationId);
+    const { data: appData, error: appErr } = await db.from('applications').delete().eq('id', applicationId).select();
     if (appErr) throw appErr;
+    if (!appData || appData.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
     _logAudit('application_deleted', { application_id: applicationId });
     alert('Application deleted');
     loadApplications();
@@ -1120,7 +1127,46 @@ window.sendPaymentEmail = async function(applicationId) {
       if (!sendAnyway) return;
     }
 
-    const { data, error: fnError } = await db.functions.invoke('send-application-emails', {
+    const serviceName = _serviceNames[app.service_type] || app.service_type;
+    const total = pricingInfo?.totalCost || '';
+    const upfront = pricingInfo?.upfrontPayment || '';
+    const remaining = pricingInfo?.remainingBalance || '';
+
+    const emailHTML = `
+      <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+        <div style="text-align:center;margin-bottom:30px;">
+          <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
+          <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
+        </div>
+        <div style="background:#f8f9fa;border-left:4px solid #2E9F6E;padding:20px;border-radius:4px;">
+          <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Instructions</h2>
+          <p style="margin:0;">Dear ${app.first_name} ${app.last_name},</p>
+        </div>
+        <p>Thank you for choosing ClearRoute UK for your ${serviceName}.</p>
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="color:#0D4F4F;">Payment Summary</h3>
+          <p><strong>Application ID:</strong> ${app.id}</p>
+          ${pricingInfo ? `<p><strong>Package:</strong> ${pricingInfo.packageName}</p>
+          <p><strong>Total Cost:</strong> &pound;${total}</p>
+          <p style="color:#2E9F6E;"><strong>Upfront Payment:</strong> &pound;${upfront}</p>
+          <p><strong>Remaining Balance:</strong> &pound;${remaining}</p>` : ''}
+        </div>
+        <p>Please transfer the upfront payment via bank transfer to:<br>
+        <strong>Account Name:</strong> ClearRoute UK<br>
+        <strong>Reference:</strong> ${app.id}</p>
+        <p>Questions? Contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a></p>
+      </div>`;
+
+    // Send via EmailJS (works immediately, no SMTP needed)
+    await window.EmailService.sendAdminCompose({
+      to_email: app.email,
+      to_name: `${app.first_name} ${app.last_name}`,
+      subject: `Payment Instructions - ClearRoute UK (${serviceName})`,
+      message: emailHTML,
+    });
+
+    // Also try Edge Function as best-effort (for SMTP once mailbox is configured)
+    db.functions.invoke('send-application-emails', {
       body: {
         application: {
           id: app.id,
@@ -1133,14 +1179,13 @@ window.sendPaymentEmail = async function(applicationId) {
         pricingInfo,
         sendPaymentEmail: true
       }
-    });
+    }).catch(() => {});
 
-    if (fnError) throw fnError;
     _logAudit('payment_email_sent', { application_id: applicationId });
     alert('Payment email sent successfully');
   } catch (e) {
     console.error('Send payment email error:', e);
-    alert('Error sending payment email: ' + e.message);
+    alert('Error sending payment email: ' + e.message + '\n\nMake sure EmailJS is loaded properly and templates are configured.');
   }
 };
 
@@ -1237,9 +1282,9 @@ window.addAdminNote = async function(applicationId) {
 window.deleteAdminNote = async function(noteId) {
   if (!confirm('Delete this note?')) return;
   try {
-    const { error } = await db.from('application_notes').delete().eq('id', noteId);
+    const { data, error } = await db.from('application_notes').delete().eq('id', noteId).select();
     if (error) throw error;
-    alert('Note deleted');
+    if (!data || data.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
     // Refresh the current application view
     const detailEl = document.getElementById('applicationDetail');
     if (detailEl) {
@@ -1251,7 +1296,7 @@ window.deleteAdminNote = async function(noteId) {
     }
   } catch (e) {
     console.error('Delete note error:', e);
-    alert('Error deleting note');
+    alert('Error deleting note: ' + e.message);
   }
 };
 
@@ -1459,11 +1504,12 @@ window.loadSessions = async function() {
 window.deleteSession = async function(sessionId) {
   if (!confirm('Delete this chat session and all its messages? This cannot be undone.')) return;
   try {
-    await db.from('chat_messages').delete().eq('session_id', sessionId);
-    await db.from('admin_replies').delete().eq('session_id', sessionId);
-    await db.from('admin_queue').delete().eq('session_id', sessionId);
-    const { error } = await db.from('chat_sessions').delete().eq('id', sessionId);
+    await db.from('chat_messages').delete().eq('session_id', sessionId).select();
+    await db.from('admin_replies').delete().eq('session_id', sessionId).select();
+    await db.from('admin_queue').delete().eq('session_id', sessionId).select();
+    const { data, error } = await db.from('chat_sessions').delete().eq('id', sessionId).select();
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('Delete failed — admin permission missing. Run the updated schema.');
     _logAudit('chat_session_deleted', { session_id: sessionId });
     alert('Chat session deleted');
     currentSess = null;
