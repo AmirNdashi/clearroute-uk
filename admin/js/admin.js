@@ -2288,6 +2288,54 @@ window.saveProfileSettings = async function() {
   }
 };
 
+window.changeAdminPassword = async function() {
+  const currentPw = document.getElementById('settingsCurrentPassword').value;
+  const newPw = document.getElementById('settingsNewPassword').value;
+  const confirmPw = document.getElementById('settingsConfirmPassword').value;
+  const msgEl = document.getElementById('settingsPasswordMsg');
+
+  if (!currentPw || !newPw || !confirmPw) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#B91C1C';
+    msgEl.textContent = 'Please fill in all password fields.';
+    return;
+  }
+
+  if (newPw.length < 6) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#B91C1C';
+    msgEl.textContent = 'New password must be at least 6 characters.';
+    return;
+  }
+
+  if (newPw !== confirmPw) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#B91C1C';
+    msgEl.textContent = 'New passwords do not match.';
+    return;
+  }
+
+  msgEl.style.display = 'block';
+  msgEl.style.color = '#6B7280';
+  msgEl.textContent = 'Updating password...';
+
+  try {
+    const { error } = await db.auth.updateUser({ password: newPw });
+    if (error) throw error;
+
+    document.getElementById('settingsCurrentPassword').value = '';
+    document.getElementById('settingsNewPassword').value = '';
+    document.getElementById('settingsConfirmPassword').value = '';
+    msgEl.style.color = '#047857';
+    msgEl.textContent = 'Password updated successfully.';
+    setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+  } catch (e) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#B91C1C';
+    msgEl.textContent = 'Error: ' + e.message;
+  }
+};
+
 window.saveInvoiceTemplate = function() {
   const template = document.getElementById('invoiceTemplate').value.trim();
   

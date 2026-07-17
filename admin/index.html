@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="css/admin.min.css" />
+  <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body class="admin-body">
 
@@ -456,6 +456,28 @@
                 <button onclick="resetInvoiceTemplate()" class="admin-btn admin-btn-outline">
                   <i class="fas fa-undo"></i> Reset to Default
                 </button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h4>Change Password</h4>
+              <div class="settings-form">
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="settingsCurrentPassword" class="admin-input" placeholder="Enter current password" />
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="settingsNewPassword" class="admin-input" placeholder="Enter new password (min 6 characters)" />
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="settingsConfirmPassword" class="admin-input" placeholder="Confirm new password" />
+                </div>
+                <button onclick="changeAdminPassword()" class="admin-btn admin-btn-primary">
+                  <i class="fas fa-key"></i> Update Password
+                </button>
+                <div id="settingsPasswordMsg" style="margin-top:12px;font-size:0.85rem;display:none;"></div>
               </div>
             </div>
 
