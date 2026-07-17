@@ -14,8 +14,16 @@
     <link rel="stylesheet" href="assets/css/styles.min.css" />
 
     <link rel="preconnect" href="https://lxbsdgvzdqptdatluxlg.supabase.co" crossorigin />
-
-</head>
+    <style>
+      @media (max-width:480px) {
+        .input-wrapper .input-icon { font-size: 0.85rem; left: 12px; }
+        .auth-form input[type="text"],
+        .auth-form input[type="email"],
+        .auth-form input[type="tel"],
+        .auth-form input[type="password"] { padding: 12px 14px 12px 38px; font-size: 0.85rem; }
+        .password-toggle { right: 8px; font-size: 0.95rem; }
+      }
+    </style>
 <body>
 
   <nav class="navbar" role="navigation" aria-label="Main navigation">

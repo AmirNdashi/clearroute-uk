@@ -83,6 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (error) throw error;
         
+        // Create profile row immediately (regardless of DB trigger)
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`,
+          phone,
+          is_admin: false,
+          created_at: new Date().toISOString()
+        });
+        if (profileError) console.warn('Profile upsert warning:', profileError);
+        
         successDiv.textContent = 'Account created successfully! Redirecting to dashboard...';
         setTimeout(() => {
           window.location.href = 'dashboard.html';

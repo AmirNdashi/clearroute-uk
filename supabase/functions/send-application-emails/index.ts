@@ -17,20 +17,30 @@ const smtpConfig = {
 
 let smtpClient: SmtpClient | null = null
 
+let smtpError: string | null = null
+
 async function getSmtpClient(): Promise<SmtpClient | null> {
+  if (smtpError) return null
   if (!smtpConfig.username || !smtpConfig.password) {
+    smtpError = 'SMTP credentials not configured'
     console.warn('SMTP credentials not configured — emails will only be logged')
     return null
   }
   if (smtpClient) return smtpClient
-  smtpClient = new SmtpClient()
-  await smtpClient.connectTLS({
-    hostname: smtpConfig.hostname,
-    port: smtpConfig.port,
-    username: smtpConfig.username,
-    password: smtpConfig.password,
-  })
-  return smtpClient
+  try {
+    smtpClient = new SmtpClient()
+    await smtpClient.connectTLS({
+      hostname: smtpConfig.hostname,
+      port: smtpConfig.port,
+      username: smtpConfig.username,
+      password: smtpConfig.password,
+    })
+    return smtpClient
+  } catch (err) {
+    smtpError = String(err)
+    console.error('SMTP connection failed:', err)
+    return null
+  }
 }
 
 serve(async (req) => {
