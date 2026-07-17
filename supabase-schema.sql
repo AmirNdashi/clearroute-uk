@@ -664,7 +664,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
     COALESCE(NEW.raw_user_meta_data->>'phone', ''),
-    LOWER(NEW.email) = LOWER('info@clearoute.uk')
+    LOWER(NEW.email) = LOWER('info@clearrouteuk.co.uk')
   );
   RETURN NEW;
 END;
@@ -686,7 +686,7 @@ DO $$
 BEGIN
   UPDATE public.profiles
   SET is_admin = TRUE
-  WHERE LOWER(email) = LOWER('info@clearoute.uk')
+  WHERE LOWER(email) = LOWER('info@clearrouteuk.co.uk')
     AND (is_admin IS NULL OR is_admin = FALSE);
 END $$;
 
@@ -733,8 +733,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================
 -- ADMIN SETUP (run once after creating your admin account)
 -- ============================================================
--- Only info@clearoute.uk should have admin access:
--- UPDATE profiles SET is_admin = (LOWER(email) = LOWER('info@clearoute.uk'));
+-- Only info@clearrouteuk.co.uk should have admin access:
+-- UPDATE profiles SET is_admin = (LOWER(email) = LOWER('info@clearrouteuk.co.uk'));
 
 -- ============================================================
 -- AUDIT LOG RLS POLICIES

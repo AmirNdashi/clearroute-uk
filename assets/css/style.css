@@ -460,7 +460,10 @@ section {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('../images/hero-bg.jpg');
+  background-image: image-set(
+    url('../images/hero-bg.webp') type('image/webp'),
+    url('../images/hero-bg.jpg') type('image/jpeg')
+  );
   background-size: cover;
   background-position: center;
   opacity: 0.15;

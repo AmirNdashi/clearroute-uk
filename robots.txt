@@ -4,4 +4,4 @@ Allow: /
 Disallow: /admin
 Disallow: /.github/
 
-Sitemap: https://www.clearoute.uk/sitemap.xml
+Sitemap: https://www.clearrouteuk.co.uk/sitemap.xml

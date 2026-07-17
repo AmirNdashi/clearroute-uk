@@ -7,7 +7,7 @@ const SUPABASE_URL      = 'https://lxbsdgvzdqptdatluxlg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4YnNkZ3Z6ZHFwdGRhdGx1eGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMjg0MDgsImV4cCI6MjA5ODYwNDQwOH0.7o3ZraBo-zcjgBro2K5bICoYm8YyoNvB3A0lajpeF1A';
 
 // Admin account — only this email can access /admin; blocked from user dashboard
-const ADMIN_EMAIL = 'info@clearoute.uk';
+const ADMIN_EMAIL = 'info@clearrouteuk.co.uk';
 
 window.isAdminEmail = (email) => {
   if (!email) return false;

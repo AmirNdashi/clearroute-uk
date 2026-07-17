@@ -353,7 +353,7 @@ window.loadEnquiries = async function() {
               </ol>
             </div>
             <p style="font-size:0.8rem;color:#6B7280;margin-top:16px;">
-              <i class="fas fa-info-circle"></i> In the meantime, check <strong>info@clearoute.uk</strong> for enquiries
+              <i class="fas fa-info-circle"></i> In the meantime, check <strong>info@clearrouteuk.co.uk</strong> for enquiries
             </p>
           </div>
         `;
@@ -476,9 +476,9 @@ window.viewEnquiry = async function(enquiryId) {
 
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-top:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
-            <a href="mailto:${enquiry.email}" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;text-decoration:none;margin-bottom:8px;">
+            <button onclick="openEmailModal({recipientId:'${enquiry.id}',recipientType:'enquiry',email:'${enquiry.email}',name:'${enquiry.first_name} ${enquiry.last_name}',subject:'Re: ${enquiry.service}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Reply via Email
-            </a>
+            </button>
             ${enquiry.phone ? `
               <a href="tel:${enquiry.phone}" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;text-decoration:none;">
                 <i class="fas fa-phone"></i> Call
@@ -689,9 +689,9 @@ window.viewUser = async function(userId) {
         <div>
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
-            <a href="mailto:${user.email}" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;text-decoration:none;margin-bottom:8px;">
+            <button onclick="openEmailModal({recipientId:'${user.id}',recipientType:'user',email:'${user.email}',name:'${user.first_name} ${user.last_name || ''}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Send Email
-            </a>
+            </button>
             ${user.phone ? `
               <a href="tel:${user.phone}" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;text-decoration:none;">
                 <i class="fas fa-phone"></i> Call
@@ -1070,6 +1070,9 @@ window.viewApplication = async function(applicationId) {
           ` : ''}
 
           <div style="margin-top:16px;">
+            <button onclick="openEmailModal({recipientId:'${application.id}',recipientType:'application',email:'${application.email}',name:'${application.first_name} ${application.last_name}'})" class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;">
+              <i class="fas fa-envelope"></i> Email Applicant
+            </button>
             <button onclick="sendPaymentEmail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Send payment instructions to the applicant">
               <i class="fas fa-envelope-dollar"></i> Send Payment Email
             </button>
@@ -1077,9 +1080,7 @@ window.viewApplication = async function(applicationId) {
               <i class="fas fa-trash"></i> Delete Application
             </button>
           </div>
-        </div>
-      </div>
-    `;
+        `;
 
     document.getElementById('applicationDetail').innerHTML = detailHTML;
     showPage('application-detail');
@@ -1756,7 +1757,79 @@ async function sendReply() {
 }
 
 /* ════════════════════════════════════════
-   DOCUMENT DOWNLOAD
+    EMAIL COMPOSE MODAL
+════════════════════════════════════════ */
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeEmailModal();
+});
+
+window.openEmailModal = function({ recipientId, recipientType, email, name, subject = '' }) {
+  document.getElementById('emailRecipientId').value = recipientId || '';
+  document.getElementById('emailRecipientType').value = recipientType || '';
+  document.getElementById('emailTo').value = email || '';
+  document.getElementById('emailRecipientName').value = name || '';
+  document.getElementById('emailSubject').value = subject;
+  document.getElementById('emailMessage').value = '';
+  document.getElementById('emailSendError').style.display = 'none';
+
+  const typeLabels = { application: 'Applicant', enquiry: 'Enquirer', user: 'User' };
+  document.getElementById('emailModalTitle').textContent = `Compose Email to ${typeLabels[recipientType] || 'Recipient'}`;
+
+  document.getElementById('emailModalOverlay').style.display = 'flex';
+};
+
+window.closeEmailModal = function() {
+  document.getElementById('emailModalOverlay').style.display = 'none';
+};
+
+window.sendComposeEmail = async function() {
+  const to = document.getElementById('emailTo').value;
+  const name = document.getElementById('emailRecipientName').value;
+  const subject = document.getElementById('emailSubject').value.trim();
+  const message = document.getElementById('emailMessage').value.trim();
+  const errorEl = document.getElementById('emailSendError');
+  const btn = document.getElementById('emailSendBtn');
+
+  errorEl.style.display = 'none';
+
+  if (!subject || !message) {
+    errorEl.textContent = 'Please fill in subject and message.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+  try {
+    await window.EmailService.sendAdminCompose({
+      to_email: to,
+      to_name: name,
+      subject,
+      message: message.replace(/\n/g, '<br>'),
+    });
+
+    btn.innerHTML = '<i class="fas fa-check"></i> Sent!';
+    setTimeout(closeEmailModal, 1000);
+
+    _logAudit('email_sent', {
+      to,
+      subject,
+      recipient_type: document.getElementById('emailRecipientType').value,
+      recipient_id: document.getElementById('emailRecipientId').value,
+    });
+  } catch (err) {
+    console.error('Email send error:', err);
+    errorEl.textContent = 'Failed to send. Make sure you have created an EmailJS compose template (see instructions below).';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+  }
+};
+
+/* ════════════════════════════════════════
+    DOCUMENT DOWNLOAD
 ════════════════════════════════════════ */
 window.downloadDocument = async function(filePath) {
   try {

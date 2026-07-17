@@ -739,11 +739,16 @@ async function submitApplication(supabase, userId, serviceType) {
     
     if (docsError) console.error('Document recording error:', docsError);
     
-    // Send notification email (fire & forget — never blocks submission)
+    // Send notification email via Edge Function (fire & forget)
     sendNotificationEmail(application, formData, serviceType).catch(err => {
-      console.warn('Email sending failed (non-blocking):', err);
+      console.warn('Edge Function email sending failed (non-blocking):', err);
     });
-    
+
+    // Also send receipt via EmailJS (browser-side)
+    sendEmailJSReceipt(application, formData, serviceType).catch(err => {
+      console.warn('EmailJS receipt sending failed (non-blocking):', err);
+    });
+
     alert('Application submitted successfully! You will be redirected to your dashboard.');
     window.location.href = 'dashboard.html';
     
@@ -875,6 +880,69 @@ async function sendNotificationEmail(application, formData, serviceType) {
     }
   } catch (error) {
     console.error('Error in sendNotificationEmail:', error);
+  }
+}
+
+async function sendEmailJSReceipt(application, formData, serviceType) {
+  try {
+    const serviceName = getServiceDisplayName(application.service_type);
+    const date = new Date(application.created_at).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+    const pricingInfo = getPricingInfo(formData, serviceType);
+    let pricingHTML = '';
+    if (pricingInfo && pricingInfo.totalCost) {
+      pricingHTML = `<div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
+        <h3 style="margin:0 0 15px 0;color:#333;">Payment Summary</h3>
+        <p><strong>Selected Package:</strong> ${pricingInfo.packageName}</p>
+        <p><strong>Total Cost:</strong> £${pricingInfo.totalCost}</p>
+        <p><strong>Upfront Payment Required:</strong> £${pricingInfo.upfrontPayment}</p>
+        <p style="color:#666;">You will receive a separate email with payment instructions shortly.</p>
+      </div>`;
+    }
+    const emailHTML = `
+      <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;">
+        <div style="text-align:center;margin-bottom:30px;">
+          <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
+          <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
+        </div>
+        <div style="background:#f8f9fa;border-left:4px solid #0D4F4F;padding:20px;margin:20px 0;border-radius:4px;">
+          <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Application Received</h2>
+          <p style="margin:0;">Dear ${escapeHtml(application.first_name)} ${escapeHtml(application.last_name)},</p>
+        </div>
+        <p>Thank you for submitting your ${serviceName} application to ClearRoute UK.</p>
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Application Details</h3>
+          <p><strong>Application ID:</strong> ${application.id}</p>
+          <p><strong>Service:</strong> ${serviceName}</p>
+          <p><strong>Submitted:</strong> ${date}</p>
+          <p><strong>Email:</strong> ${escapeHtml(application.email)}</p>
+        </div>
+        ${pricingHTML}
+        <div style="background:#FDFBF7;padding:20px;border-radius:8px;margin:20px 0;">
+          <h3 style="margin:0 0 10px 0;color:#0D4F4F;">What Happens Next?</h3>
+          <ol style="margin:10px 0;padding-left:20px;">
+            <li style="margin:10px 0;">Our team will review your application within 24-48 hours</li>
+            <li style="margin:10px 0;">You will receive a confirmation email with your case handler details</li>
+            <li style="margin:10px 0;">We will contact you if any additional information is required</li>
+          </ol>
+        </div>
+        <div style="border-top:1px solid #e1e8ed;padding-top:20px;margin-top:30px;text-align:center;color:#7f8c8d;font-size:12px;">
+          <p>© ${new Date().getFullYear()} ClearRoute UK &mdash; info@clearrouteuk.co.uk</p>
+          <p>This is an automated message. Please do not reply directly.</p>
+        </div>
+      </div>`;
+
+    await window.EmailService.sendApplicationReceipt({
+      to_email: application.email,
+      to_name: `${application.first_name} ${application.last_name}`,
+      service_name: serviceName,
+      application_id: application.id,
+      submission_date: date,
+      message: emailHTML,
+    });
+  } catch (err) {
+    console.warn('sendEmailJSReceipt error:', err);
   }
 }
 

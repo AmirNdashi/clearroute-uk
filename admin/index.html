@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/admin.min.css" />
 </head>
 <body class="admin-body">
 
@@ -351,6 +351,54 @@
     </main>
   </div>
 
+  <!-- ══════════════════════════════════════
+       EMAIL COMPOSE MODAL
+  ══════════════════════════════════════ -->
+  <div class="email-modal-overlay" id="emailModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeEmailModal()">
+    <div class="email-modal" style="background:white;border-radius:12px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="padding:20px 24px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="margin:0;color:#1A1A2E;font-size:1.15rem;"><i class="fas fa-envelope" style="color:#D4735E;margin-right:8px;"></i><span id="emailModalTitle">Compose Email</span></h3>
+        <button onclick="closeEmailModal()" style="background:none;border:none;font-size:1.3rem;color:#9CA3AF;cursor:pointer;padding:4px;" aria-label="Close">&times;</button>
+      </div>
+      <div style="padding:24px;">
+        <input type="hidden" id="emailRecipientId" />
+        <input type="hidden" id="emailRecipientType" />
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:6px;">To</label>
+          <input type="email" id="emailTo" readonly style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.9rem;background:#F3F4F6;cursor:not-allowed;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:6px;">Recipient Name</label>
+          <input type="text" id="emailRecipientName" readonly style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.9rem;background:#F3F4F6;cursor:not-allowed;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:6px;">Subject *</label>
+          <input type="text" id="emailSubject" placeholder="Email subject" required style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.9rem;outline:none;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#374151;margin-bottom:6px;">Message *</label>
+          <textarea id="emailMessage" rows="10" placeholder="Type your message..." required style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.9rem;resize:vertical;outline:none;font-family:inherit;"></textarea>
+        </div>
+
+        <div id="emailSendError" style="display:none;padding:10px 14px;background:#FEE2E2;color:#B91C1C;border-radius:6px;margin-bottom:12px;font-size:0.85rem;"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="closeEmailModal()" class="admin-btn admin-btn-outline" style="padding:10px 20px;">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button onclick="sendComposeEmail()" id="emailSendBtn" class="admin-btn admin-btn-primary" style="padding:10px 20px;">
+            <i class="fas fa-paper-plane"></i> Send Email
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/email-service.js"></script>
   <script src="../assets/js/supabase-config.js"></script>
   <script type="module" src="js/admin.js"></script>
   <script>

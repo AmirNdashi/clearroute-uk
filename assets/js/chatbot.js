@@ -156,7 +156,7 @@ function validateMessage(text) {
 function buildChatbot() {
   const css = `
   .routebot-btn {
-    position: fixed; bottom: 28px; right: 28px;
+    position: fixed; bottom: 28px; left: 28px;
     width: 58px; height: 58px; border-radius: 50%;
     background: var(--copper); color: var(--teal-dark);
     border: none; cursor: pointer;
@@ -181,7 +181,7 @@ function buildChatbot() {
   .routebot-badge.show { display: flex; }
 
   .routebot-window {
-    position: fixed; bottom: 100px; right: 28px;
+    position: fixed; bottom: 100px; left: 28px;
     width: 380px; max-height: 580px;
     border-radius: var(--radius-lg);
     background: var(--white);
@@ -377,8 +377,8 @@ function buildChatbot() {
   }
 
   @media (max-width:480px) {
-    .routebot-window { width:calc(100vw - 24px); right:12px; bottom:90px; }
-    .routebot-btn { right:16px; bottom:20px; }
+    .routebot-window { width:calc(100vw - 24px); left:12px; bottom:90px; }
+    .routebot-btn { left:16px; bottom:20px; }
   }
   `;
 
@@ -674,7 +674,7 @@ async function requestHuman() {
 
     // Add bot message to user view only (NOT saved to database)
     addMessage(
-      `✅ **You're now connected to human support!**\n\nHi **${visitorName}**! A member of our team will be with you shortly. You can also reach us at **info@clearoute.uk** 📧`,
+      `✅ **You're now connected to human support!**\n\nHi **${visitorName}**! A member of our team will be with you shortly. You can also reach us at **info@clearrouteuk.co.uk** 📧`,
       'bot',
       true // Skip database save - this is user-facing only
     );
@@ -889,26 +889,26 @@ async function callWorker(userMessage) {
     const lowerMsg = userMessage.toLowerCase();
     
     if (lowerMsg.includes('licence') || lowerMsg.includes('license') || lowerMsg.includes('driving')) {
-      return "For driving licence conversion, ClearRoute UK helps international clients exchange their foreign licences for UK ones. The process depends on your country of origin. Please contact us at info@clearoute.uk for personalized guidance.";
+      return "For driving licence conversion, ClearRoute UK helps international clients exchange their foreign licences for UK ones. The process depends on your country of origin. Please contact us at info@clearrouteuk.co.uk for personalized guidance.";
     }
     if (lowerMsg.includes('ni') || lowerMsg.includes('national insurance')) {
-      return "To apply for a National Insurance number, you'll need to apply through the UK government. ClearRoute UK can guide you through the process and help with document preparation. Email us at info@clearoute.uk for assistance.";
+      return "To apply for a National Insurance number, you'll need to apply through the UK government. ClearRoute UK can guide you through the process and help with document preparation. Email us at info@clearrouteuk.co.uk for assistance.";
     }
     if (lowerMsg.includes('brp') || lowerMsg.includes('evisa') || lowerMsg.includes('biometric')) {
-      return "BRP (Biometric Residence Permit) and eVisa guidance is one of our specialties. We help you understand the requirements and process for your specific situation. Contact info@clearoute.uk for expert help.";
+      return "BRP (Biometric Residence Permit) and eVisa guidance is one of our specialties. We help you understand the requirements and process for your specific situation. Contact info@clearrouteuk.co.uk for expert help.";
     }
     if (lowerMsg.includes('theory') || lowerMsg.includes('practical') || lowerMsg.includes('test')) {
-      return "ClearRoute UK can help you book and prepare for both theory and practical driving tests. We provide guidance on requirements, booking process, and preparation. Reach out to info@clearoute.uk for support.";
+      return "ClearRoute UK can help you book and prepare for both theory and practical driving tests. We provide guidance on requirements, booking process, and preparation. Reach out to info@clearrouteuk.co.uk for support.";
     }
     if (lowerMsg.includes('bank') || lowerMsg.includes('account')) {
-      return "Opening a UK bank account as an international resident can be complex. ClearRoute UK helps you understand the requirements and guides you through the process. Email info@clearoute.uk for assistance.";
+      return "Opening a UK bank account as an international resident can be complex. ClearRoute UK helps you understand the requirements and guides you through the process. Email info@clearrouteuk.co.uk for assistance.";
     }
     if (lowerMsg.includes('address') || lowerMsg.includes('proof')) {
-      return "Address proof is essential for many UK applications. ClearRoute UK helps you understand acceptable documents and how to obtain them if needed. Contact us at info@clearoute.uk.";
+      return "Address proof is essential for many UK applications. ClearRoute UK helps you understand acceptable documents and how to obtain them if needed. Contact us at info@clearrouteuk.co.uk.";
     }
     
     // Generic fallback
-    return "I'm currently experiencing technical difficulties with my AI service. For immediate assistance, please email us at info@clearoute.uk or message us on WhatsApp. Our team is ready to help with driving licences, NI numbers, BRP/eVisa, and more.";
+    return "I'm currently experiencing technical difficulties with my AI service. For immediate assistance, please email us at info@clearrouteuk.co.uk or message us on WhatsApp. Our team is ready to help with driving licences, NI numbers, BRP/eVisa, and more.";
   }
 }
 
@@ -996,7 +996,7 @@ async function handleSend() {
   } catch (err) {
     removeTyping();
     addMessage(
-      "Sorry, I had a moment there. You can reach us at <a href='mailto:info@clearoute.uk' style='color:var(--copper);'>info@clearoute.uk</a> or via WhatsApp.",
+      "Sorry, I had a moment there. You can reach us at <a href='mailto:info@clearrouteuk.co.uk' style='color:var(--copper);'>info@clearrouteuk.co.uk</a> or via WhatsApp.",
       'bot'
     );
     console.error('Worker error:', err);
