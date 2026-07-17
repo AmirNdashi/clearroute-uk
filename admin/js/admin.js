@@ -1127,65 +1127,79 @@ window.sendPaymentEmail = async function(applicationId) {
       if (!sendAnyway) return;
     }
 
-    const serviceName = _serviceNames[app.service_type] || app.service_type;
-    const total = pricingInfo?.totalCost || '';
-    const upfront = pricingInfo?.upfrontPayment || '';
-    const remaining = pricingInfo?.remainingBalance || '';
+    // Get document information
+    const { data: documents } = await db.from('application_documents').select('*').eq('application_id', applicationId).single();
 
-    const emailHTML = `
-      <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <div style="text-align:center;margin-bottom:30px;">
-          <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
-          <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
-        </div>
-        <div style="background:#f8f9fa;border-left:4px solid #2E9F6E;padding:20px;border-radius:4px;">
-          <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Instructions</h2>
-          <p style="margin:0;">Dear ${app.first_name} ${app.last_name},</p>
-        </div>
-        <p>Thank you for choosing ClearRoute UK for your ${serviceName}.</p>
-        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
-          <h3 style="color:#0D4F4F;">Payment Summary</h3>
-          <p><strong>Application ID:</strong> ${app.id}</p>
-          ${pricingInfo ? `<p><strong>Package:</strong> ${pricingInfo.packageName}</p>
-          <p><strong>Total Cost:</strong> &pound;${total}</p>
-          <p style="color:#2E9F6E;"><strong>Upfront Payment:</strong> &pound;${upfront}</p>
-          <p><strong>Remaining Balance:</strong> &pound;${remaining}</p>` : ''}
-        </div>
-        <p>Please transfer the upfront payment via bank transfer to:<br>
-        <strong>Account Name:</strong> ClearRoute UK<br>
-        <strong>Reference:</strong> ${app.id}</p>
-        <p>Questions? Contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a></p>
-      </div>`;
+    // Prepare user data from application record
+    const userData = {
+      phone: app.phone,
+      date_of_birth: app.date_of_birth,
+      nationality: app.nationality,
+      address: app.address
+    };
 
-    // Send via EmailJS (works immediately, no SMTP needed)
-    await window.EmailService.sendAdminCompose({
-      to_email: app.email,
-      to_name: `${app.first_name} ${app.last_name}`,
-      subject: `Payment Instructions - ClearRoute UK (${serviceName})`,
-      message: emailHTML,
-    });
-
-    // Also try Edge Function as best-effort (for SMTP once mailbox is configured)
-    db.functions.invoke('send-application-emails', {
+    // Send via Edge Function for professional invoice
+    const { data: emailResult, error: emailError } = await db.functions.invoke('send-application-emails', {
       body: {
         application: {
           id: app.id,
-          firstName: app.first_name,
-          lastName: app.last_name,
+          first_name: app.first_name,
+          last_name: app.last_name,
           email: app.email,
-          serviceType: app.service_type,
-          createdAt: app.created_at
+          service_type: app.service_type,
+          status: app.status,
+          created_at: app.created_at
         },
+        userData,
+        serviceData: app.service_data || {},
         pricingInfo,
-        sendPaymentEmail: true
+        documents: documents || {},
+        emailType: 'payment'
       }
-    }).catch(() => {});
+    });
+
+    if (emailError) {
+      console.error('Edge Function email error:', emailError);
+      // Fallback to EmailJS if Edge Function fails
+      const serviceName = _serviceNames[app.service_type] || app.service_type;
+      const emailHTML = `
+        <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="text-align:center;margin-bottom:30px;">
+            <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
+            <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
+          </div>
+          <div style="background:#f8f9fa;border-left:4px solid #2E9F6E;padding:20px;border-radius:4px;">
+            <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Instructions</h2>
+            <p style="margin:0;">Dear ${app.first_name} ${app.last_name},</p>
+          </div>
+          <p>Thank you for choosing ClearRoute UK for your ${serviceName}.</p>
+          <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+            <h3 style="color:#0D4F4F;">Payment Summary</h3>
+            <p><strong>Application ID:</strong> ${app.id}</p>
+            ${pricingInfo ? `<p><strong>Package:</strong> ${pricingInfo.packageName}</p>
+            <p><strong>Total Cost:</strong> &pound;${pricingInfo.totalCost}</p>
+            <p style="color:#2E9F6E;"><strong>Upfront Payment:</strong> &pound;${pricingInfo.upfrontPayment}</p>
+            <p><strong>Remaining Balance:</strong> &pound;${pricingInfo.remainingBalance}</p>` : ''}
+          </div>
+          <p>Please transfer the upfront payment via bank transfer to:<br>
+          <strong>Account Name:</strong> ClearRoute UK<br>
+          <strong>Reference:</strong> ${app.id}</p>
+          <p>Questions? Contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a></p>
+        </div>`;
+
+      await window.EmailService.sendAdminCompose({
+        to_email: app.email,
+        to_name: `${app.first_name} ${app.last_name}`,
+        subject: `Payment Instructions - ClearRoute UK (${serviceName})`,
+        message: emailHTML,
+      });
+    }
 
     _logAudit('payment_email_sent', { application_id: applicationId });
     alert('Payment email sent successfully');
   } catch (e) {
     console.error('Send payment email error:', e);
-    alert('Error sending payment email: ' + e.message + '\n\nMake sure EmailJS is loaded properly and templates are configured.');
+    alert('Error sending payment email: ' + e.message + '\n\nMake sure the Edge Function is deployed and EmailJS is loaded properly.');
   }
 };
 

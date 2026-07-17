@@ -49,20 +49,20 @@ serve(async (req) => {
   }
 
   try {
-    const { application, pricingInfo, sendPaymentEmail } = await req.json()
+    const { application, userData, serviceData, pricingInfo, documents, emailType } = await req.json()
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    await sendApplicationReceiptEmail(application, pricingInfo, supabase)
-
-    if (sendPaymentEmail && pricingInfo) {
-      await sendPaymentDetailsEmail(application, pricingInfo, supabase)
+    if (emailType === 'receipt') {
+      await sendApplicationReceiptEmail(application, userData, serviceData, pricingInfo, documents)
+    } else if (emailType === 'payment') {
+      await sendPaymentInvoiceEmail(application, userData, serviceData, pricingInfo, documents)
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Emails sent successfully' }),
+      JSON.stringify({ success: true, message: 'Email sent successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
@@ -90,25 +90,61 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
-async function sendApplicationReceiptEmail(application: any, pricingInfo: any, supabase: any) {
-  const serviceName = getServiceDisplayName(application.serviceType)
-  const date = new Date(application.createdAt).toLocaleDateString('en-GB', {
+async function sendApplicationReceiptEmail(application: any, userData: any, serviceData: any, pricingInfo: any, documents: any) {
+  const serviceName = getServiceDisplayName(application.service_type)
+  const date = new Date(application.created_at).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
 
   let pricingSection = ''
-  if (pricingInfo) {
+  if (pricingInfo && Object.keys(pricingInfo).length > 0) {
     pricingSection = `
       <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
         <h3 style="margin:0 0 15px 0;color:#333;">Payment Summary</h3>
-        <p style="margin:5px 0;"><strong>Selected Package:</strong> ${pricingInfo.packageName}</p>
-        <p style="margin:5px 0;"><strong>Total Cost:</strong> £${pricingInfo.totalCost}</p>
-        <p style="margin:5px 0;"><strong>Upfront Payment Required:</strong> £${pricingInfo.upfrontPayment}</p>
+        <p style="margin:5px 0;"><strong>Selected Package:</strong> ${pricingInfo.packageName || 'Standard'}</p>
+        <p style="margin:5px 0;"><strong>Total Cost:</strong> £${pricingInfo.totalCost || 'TBD'}</p>
+        <p style="margin:5px 0;"><strong>Upfront Payment Required:</strong> £${pricingInfo.upfrontPayment || 'TBD'}</p>
         <p style="margin:5px 0;color:#666;">You will receive a separate email with payment instructions shortly.</p>
       </div>
     `
+  }
+
+  let serviceDetailsSection = ''
+  if (serviceData && Object.keys(serviceData).length > 0) {
+    const serviceFields = Object.entries(serviceData)
+      .filter(([key, value]) => value && key !== 'drivingPackage' && key !== 'pcoPackage')
+      .map(([key, value]) => {
+        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+        return `<p style="margin:5px 0;"><strong>${label}:</strong> ${value}</p>`
+      }).join('')
+    
+    if (serviceFields) {
+      serviceDetailsSection = `
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Service-Specific Details</h3>
+          ${serviceFields}
+        </div>
+      `
+    }
+  }
+
+  let documentsSection = ''
+  if (documents) {
+    const docItems = []
+    if (documents.passport_provided) docItems.push('✓ Passport / ID Document')
+    if (documents.address_proof_provided) docItems.push('✓ Proof of Address')
+    if (documents.additional_doc_provided) docItems.push('✓ Additional Document')
+    
+    if (docItems.length > 0) {
+      documentsSection = `
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Documents Submitted</h3>
+          ${docItems.map(item => `<p style="margin:5px 0;">${item}</p>`).join('')}
+        </div>
+      `
+    }
   }
 
   const html = `
@@ -123,26 +159,44 @@ async function sendApplicationReceiptEmail(application: any, pricingInfo: any, s
         </div>
         <div style="background:#f8f9fa;border-left:4px solid #0D4F4F;padding:20px;margin:20px 0;border-radius:4px;">
           <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Application Received</h2>
-          <p style="margin:0;">Dear ${application.firstName} ${application.lastName},</p>
+          <p style="margin:0;">Dear ${application.first_name} ${application.last_name},</p>
         </div>
-        <p style="margin:20px 0;">Thank you for submitting your ${serviceName} application to ClearRoute UK.</p>
+        <p style="margin:20px 0;">Thank you for submitting your ${serviceName} application to ClearRoute UK. We have received your application and it is currently being reviewed by our team.</p>
+        
         <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
           <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Application Details</h3>
           <p style="margin:8px 0;"><strong>Application ID:</strong> ${application.id}</p>
           <p style="margin:8px 0;"><strong>Service:</strong> ${serviceName}</p>
           <p style="margin:8px 0;"><strong>Submitted Date:</strong> ${date}</p>
-          <p style="margin:8px 0;"><strong>Email:</strong> ${application.email}</p>
+          <p style="margin:8px 0;"><strong>Status:</strong> ${application.status?.toUpperCase() || 'SUBMITTED'}</p>
         </div>
+
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Personal Information</h3>
+          <p style="margin:8px 0;"><strong>Full Name:</strong> ${application.first_name} ${application.last_name}</p>
+          <p style="margin:8px 0;"><strong>Email:</strong> ${application.email}</p>
+          ${userData?.phone ? `<p style="margin:8px 0;"><strong>Phone:</strong> ${userData.phone}</p>` : ''}
+          ${userData?.date_of_birth ? `<p style="margin:8px 0;"><strong>Date of Birth:</strong> ${new Date(userData.date_of_birth).toLocaleDateString('en-GB')}</p>` : ''}
+          ${userData?.nationality ? `<p style="margin:8px 0;"><strong>Nationality:</strong> ${userData.nationality}</p>` : ''}
+          ${userData?.address ? `<p style="margin:8px 0;"><strong>Address:</strong> ${userData.address}</p>` : ''}
+        </div>
+
+        ${serviceDetailsSection}
+        ${documentsSection}
         ${pricingSection}
+        
         <div style="background:#FDFBF7;padding:20px;border-radius:8px;margin:20px 0;">
           <h3 style="margin:0 0 10px 0;color:#0D4F4F;">What Happens Next?</h3>
           <ol style="margin:10px 0;padding-left:20px;">
             <li style="margin:10px 0;">Our team will review your application within 24-48 hours</li>
             <li style="margin:10px 0;">You will receive a confirmation email with your case handler details</li>
+            <li style="margin:10px 0;">If payment is required, you will receive detailed payment instructions</li>
             <li style="margin:10px 0;">We will contact you if any additional information is required</li>
           </ol>
         </div>
+        
         <p style="margin:20px 0;">If you have any questions, please contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a> or WhatsApp <a href="https://wa.me/447983312575">+447983312575</a>.</p>
+        
         <div style="border-top:1px solid #e1e8ed;padding-top:20px;margin-top:30px;text-align:center;color:#7f8c8d;font-size:12px;">
           <p style="margin:5px 0;">&copy; ${new Date().getFullYear()} ClearRoute UK. All rights reserved.</p>
           <p style="margin:5px 0;">This is an automated email. Please do not reply directly to this message.</p>
@@ -155,8 +209,33 @@ async function sendApplicationReceiptEmail(application: any, pricingInfo: any, s
   await sendEmail(application.email, `Application Received - ClearRoute UK (${serviceName})`, html)
 }
 
-async function sendPaymentDetailsEmail(application: any, pricingInfo: any, supabase: any) {
-  const serviceName = getServiceDisplayName(application.serviceType)
+async function sendPaymentInvoiceEmail(application: any, userData: any, serviceData: any, pricingInfo: any, documents: any) {
+  const serviceName = getServiceDisplayName(application.service_type)
+  const invoiceDate = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+  const invoiceNumber = `INV-${application.id.slice(0, 8).toUpperCase()}`
+
+  let serviceDetailsSection = ''
+  if (serviceData && Object.keys(serviceData).length > 0) {
+    const serviceFields = Object.entries(serviceData)
+      .filter(([key, value]) => value && key !== 'drivingPackage' && key !== 'pcoPackage')
+      .map(([key, value]) => {
+        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+        return `<p style="margin:5px 0;"><strong>${label}:</strong> ${value}</p>`
+      }).join('')
+    
+    if (serviceFields) {
+      serviceDetailsSection = `
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Service Details</h3>
+          ${serviceFields}
+        </div>
+      `
+    }
+  }
 
   const html = `
     <!DOCTYPE html>
@@ -168,56 +247,105 @@ async function sendPaymentDetailsEmail(application: any, pricingInfo: any, supab
           <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
           <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
         </div>
+        
         <div style="background:#f8f9fa;border-left:4px solid #2E9F6E;padding:20px;margin:20px 0;border-radius:4px;">
-          <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Instructions</h2>
-          <p style="margin:0;">Dear ${application.firstName} ${application.lastName},</p>
+          <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Invoice</h2>
+          <p style="margin:0;">Dear ${application.first_name} ${application.last_name},</p>
         </div>
-        <p style="margin:20px 0;">Thank you for choosing ClearRoute UK for your ${serviceName}. Below are the payment details.</p>
-        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
-          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Payment Summary</h3>
+        
+        <p style="margin:20px 0;">Thank you for choosing ClearRoute UK for your ${serviceName}. Your application has been reviewed and is ready for processing. Please find the payment details below.</p>
+        
+        <div style="background:#fff;border:2px solid #0D4F4F;border-radius:8px;padding:20px;margin:20px 0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #e1e8ed;">
+            <div>
+              <p style="margin:0;color:#7f8c8d;font-size:12px;">INVOICE NUMBER</p>
+              <p style="margin:0;font-weight:700;color:#0D4F4F;">${invoiceNumber}</p>
+            </div>
+            <div style="text-align:right;">
+              <p style="margin:0;color:#7f8c8d;font-size:12px;">INVOICE DATE</p>
+              <p style="margin:0;font-weight:700;color:#0D4F4F;">${invoiceDate}</p>
+            </div>
+          </div>
+          
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Invoice Details</h3>
           <p style="margin:8px 0;"><strong>Application ID:</strong> ${application.id}</p>
-          <p style="margin:8px 0;"><strong>Selected Package:</strong> ${pricingInfo.packageName}</p>
-          <div style="background:#f8f9fa;padding:15px;border-radius:4px;margin:15px 0;">
-            <p style="margin:8px 0;font-size:18px;"><strong>Total Cost:</strong> &pound;${pricingInfo.totalCost}</p>
-            <p style="margin:8px 0;color:#2E9F6E;font-size:16px;"><strong>Upfront Payment Required:</strong> &pound;${pricingInfo.upfrontPayment}</p>
-            <p style="margin:8px 0;color:#7f8c8d;"><strong>Remaining Balance:</strong> &pound;${pricingInfo.remainingBalance}</p>
+          <p style="margin:8px 0;"><strong>Service:</strong> ${serviceName}</p>
+          ${pricingInfo?.packageName ? `<p style="margin:8px 0;"><strong>Package:</strong> ${pricingInfo.packageName}</p>` : ''}
+          
+          <div style="background:#f8f9fa;padding:15px;border-radius:4px;margin:20px 0;">
+            <table style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #e1e8ed;"><strong>Description</strong></td>
+                <td style="padding:10px 0;border-bottom:1px solid #e1e8ed;text-align:right;"><strong>Amount</strong></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #e1e8ed;">${serviceName} ${pricingInfo?.packageName ? `(${pricingInfo.packageName})` : ''}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #e1e8ed;text-align:right;">£${pricingInfo?.totalCost || 'TBD'}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 0;color:#2E9F6E;"><strong>Upfront Payment Due</strong></td>
+                <td style="padding:10px 0;color:#2E9F6E;text-align:right;font-weight:700;">£${pricingInfo?.upfrontPayment || 'TBD'}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 0;color:#7f8c8d;">Remaining Balance</td>
+                <td style="padding:10px 0;color:#7f8c8d;text-align:right;">£${pricingInfo?.remainingBalance || 'TBD'}</td>
+              </tr>
+            </table>
           </div>
         </div>
+
+        <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Client Information</h3>
+          <p style="margin:8px 0;"><strong>Name:</strong> ${application.first_name} ${application.last_name}</p>
+          <p style="margin:8px 0;"><strong>Email:</strong> ${application.email}</p>
+          ${userData?.phone ? `<p style="margin:8px 0;"><strong>Phone:</strong> ${userData.phone}</p>` : ''}
+          ${userData?.address ? `<p style="margin:8px 0;"><strong>Address:</strong> ${userData.address}</p>` : ''}
+        </div>
+
+        ${serviceDetailsSection}
+        
         <div style="background:#FDFBF7;padding:20px;border-radius:8px;margin:20px 0;">
-          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">How to Make Payment</h3>
-          <p>Please transfer the upfront payment of <strong>&pound;${pricingInfo.upfrontPayment}</strong> via:</p>
+          <h3 style="margin:0 0 15px 0;color:#0D4F4F;">Payment Methods</h3>
+          
           <div style="background:#fff;padding:15px;border-radius:4px;margin:15px 0;">
-            <h4 style="margin:0 0 10px 0;color:#0D4F4F;">Bank Transfer</h4>
+            <h4 style="margin:0 0 10px 0;color:#0D4F4F;">Bank Transfer (Preferred)</h4>
             <p style="margin:5px 0;"><strong>Account Name:</strong> ClearRoute UK</p>
             <p style="margin:5px 0;"><strong>Account Number:</strong> [Your Account Number]</p>
             <p style="margin:5px 0;"><strong>Sort Code:</strong> [Your Sort Code]</p>
             <p style="margin:5px 0;"><strong>Reference:</strong> ${application.id}</p>
           </div>
+          
           <div style="background:#fff;padding:15px;border-radius:4px;margin:15px 0;">
-            <h4 style="margin:0 0 10px 0;color:#0D4F4F;">Alternative Methods</h4>
-            <p style="margin:5px 0;">&bull; <strong>Wise:</strong> Send to info@clearrouteuk.co.uk</p>
+            <h4 style="margin:0 0 10px 0;color:#0D4F4F;">Alternative Payment Methods</h4>
+            <p style="margin:5px 0;">&bull; <strong>Wise Transfer:</strong> Send to info@clearrouteuk.co.uk</p>
             <p style="margin:5px 0;">&bull; <strong>PayPal:</strong> Send to info@clearrouteuk.co.uk</p>
-            <p style="margin:5px 0;">&bull; <strong>WhatsApp:</strong> Contact us for a payment link</p>
+            <p style="margin:5px 0;">&bull; <strong>WhatsApp:</strong> Contact us at +447983312575 for payment link</p>
           </div>
         </div>
+        
         <div style="background:#FEF3C7;border-left:4px solid #D4735E;padding:15px;margin:20px 0;border-radius:4px;">
-          <h4 style="margin:0 0 10px 0;color:#92400E;">Important Notes</h4>
+          <h4 style="margin:0 0 10px 0;color:#92400E;">Important Payment Notes</h4>
           <ul style="margin:10px 0;padding-left:20px;">
-            <li style="margin:5px 0;">Include Application ID (${application.id}) as the payment reference</li>
-            <li style="margin:5px 0;">Remaining &pound;${pricingInfo.remainingBalance} due upon completion of key milestones</li>
+            <li style="margin:5px 0;">Please include <strong>Application ID (${application.id})</strong> as your payment reference</li>
+            <li style="margin:5px 0;">Remaining balance of <strong>£${pricingInfo?.remainingBalance || 'TBD'}</strong> is due upon completion of key milestones</li>
             <li style="margin:5px 0;">Work commences within 24 hours of payment confirmation</li>
+            <li style="margin:5px 0;">Please send payment confirmation to info@clearrouteuk.co.uk</li>
           </ul>
         </div>
-        <p style="margin:20px 0;">Questions? Contact <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a> or WhatsApp <a href="https://wa.me/447983312575">+447983312575</a>.</p>
+        
+        <p style="margin:20px 0;">If you have any questions about this invoice or payment process, please contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a> or WhatsApp <a href="https://wa.me/447983312575">+447983312575</a>.</p>
+        
         <div style="border-top:1px solid #e1e8ed;padding-top:20px;margin-top:30px;text-align:center;color:#7f8c8d;font-size:12px;">
-          <p style="margin:5px 0;">&copy; ${new Date().getFullYear()} ClearRoute UK</p>
+          <p style="margin:5px 0;">&copy; ${new Date().getFullYear()} ClearRoute UK. All rights reserved.</p>
+          <p style="margin:5px 0;">Registered in England & Wales</p>
+          <p style="margin:5px 0;">This is an automated invoice. For enquiries, please contact our team.</p>
         </div>
       </div>
     </body>
     </html>
   `
 
-  await sendEmail(application.email, `Payment Instructions - ClearRoute UK`, html)
+  await sendEmail(application.email, `Payment Invoice - ClearRoute UK (${invoiceNumber})`, html)
 }
 
 function getServiceDisplayName(serviceType: string): string {
