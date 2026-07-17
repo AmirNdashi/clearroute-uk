@@ -1079,8 +1079,8 @@ window.viewApplication = async function(applicationId) {
             <button onclick="openEmailModal({recipientId:'${application.id}',recipientType:'application',email:'${application.email}',name:'${application.first_name} ${application.last_name}'})" class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Email Applicant
             </button>
-            <button onclick="sendPaymentEmail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Send payment instructions to the applicant">
-              <i class="fas fa-envelope-dollar"></i> Send Payment Email
+            <button onclick="copyPaymentMail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Copy payment invoice text to clipboard">
+              <i class="fas fa-copy"></i> Copy Payment Mail
             </button>
             <button onclick="deleteApplication('${application.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
               <i class="fas fa-trash"></i> Delete Application
@@ -1116,90 +1116,134 @@ window.deleteApplication = async function(applicationId) {
   }
 };
 
-window.sendPaymentEmail = async function(applicationId) {
+window.copyPaymentMail = async function(applicationId) {
   try {
     const { data: app, error } = await db.from('applications').select('*').eq('id', applicationId).single();
     if (error) throw error;
 
     const pricingInfo = app.pricing_info && Object.keys(app.pricing_info).length > 0 ? app.pricing_info : null;
-    if (!pricingInfo) {
-      const sendAnyway = confirm('This application has no pricing info set. Send generic payment email anyway?');
-      if (!sendAnyway) return;
-    }
+    const serviceName = _serviceNames[app.service_type] || app.service_type;
+    const invoiceDate = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    const invoiceNumber = `INV-${app.id.slice(0, 8).toUpperCase()}`;
 
     // Get document information
     const { data: documents } = await db.from('application_documents').select('*').eq('application_id', applicationId).single();
 
-    // Prepare user data from application record
-    const userData = {
-      phone: app.phone,
-      date_of_birth: app.date_of_birth,
-      nationality: app.nationality,
-      address: app.address
-    };
-
-    // Send via Edge Function for professional invoice
-    const { data: emailResult, error: emailError } = await db.functions.invoke('send-application-emails', {
-      body: {
-        application: {
-          id: app.id,
-          first_name: app.first_name,
-          last_name: app.last_name,
-          email: app.email,
-          service_type: app.service_type,
-          status: app.status,
-          created_at: app.created_at
-        },
-        userData,
-        serviceData: app.service_data || {},
-        pricingInfo,
-        documents: documents || {},
-        emailType: 'payment'
+    // Build service-specific details
+    let serviceDetails = '';
+    if (app.service_data && Object.keys(app.service_data).length > 0) {
+      const serviceFields = Object.entries(app.service_data)
+        .filter(([key, value]) => value && key !== 'drivingPackage' && key !== 'pcoPackage')
+        .map(([key, value]) => {
+          const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+          return `${label}: ${value}`;
+        }).join('\n');
+      
+      if (serviceFields) {
+        serviceDetails = `\nSERVICE DETAILS:\n${serviceFields}`;
       }
-    });
-
-    if (emailError) {
-      console.error('Edge Function email error:', emailError);
-      // Fallback to EmailJS if Edge Function fails
-      const serviceName = _serviceNames[app.service_type] || app.service_type;
-      const emailHTML = `
-        <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <div style="text-align:center;margin-bottom:30px;">
-            <h1 style="color:#0D4F4F;margin:0;">ClearRoute UK</h1>
-            <p style="color:#7f8c8d;margin:5px 0;">Documentation Experts</p>
-          </div>
-          <div style="background:#f8f9fa;border-left:4px solid #2E9F6E;padding:20px;border-radius:4px;">
-            <h2 style="margin:0 0 10px 0;color:#0D4F4F;">Payment Instructions</h2>
-            <p style="margin:0;">Dear ${app.first_name} ${app.last_name},</p>
-          </div>
-          <p>Thank you for choosing ClearRoute UK for your ${serviceName}.</p>
-          <div style="background:#fff;border:1px solid #e1e8ed;border-radius:8px;padding:20px;margin:20px 0;">
-            <h3 style="color:#0D4F4F;">Payment Summary</h3>
-            <p><strong>Application ID:</strong> ${app.id}</p>
-            ${pricingInfo ? `<p><strong>Package:</strong> ${pricingInfo.packageName}</p>
-            <p><strong>Total Cost:</strong> &pound;${pricingInfo.totalCost}</p>
-            <p style="color:#2E9F6E;"><strong>Upfront Payment:</strong> &pound;${pricingInfo.upfrontPayment}</p>
-            <p><strong>Remaining Balance:</strong> &pound;${pricingInfo.remainingBalance}</p>` : ''}
-          </div>
-          <p>Please transfer the upfront payment via bank transfer to:<br>
-          <strong>Account Name:</strong> ClearRoute UK<br>
-          <strong>Reference:</strong> ${app.id}</p>
-          <p>Questions? Contact us at <a href="mailto:info@clearrouteuk.co.uk">info@clearrouteuk.co.uk</a></p>
-        </div>`;
-
-      await window.EmailService.sendAdminCompose({
-        to_email: app.email,
-        to_name: `${app.first_name} ${app.last_name}`,
-        subject: `Payment Instructions - ClearRoute UK (${serviceName})`,
-        message: emailHTML,
-      });
     }
 
-    _logAudit('payment_email_sent', { application_id: applicationId });
-    alert('Payment email sent successfully');
+    // Build document status
+    let docStatus = '';
+    if (documents) {
+      const docItems = [];
+      if (documents.passport_provided) docItems.push('✓ Passport / ID Document');
+      if (documents.address_proof_provided) docItems.push('✓ Proof of Address');
+      if (documents.additional_doc_provided) docItems.push('✓ Additional Document');
+      
+      if (docItems.length > 0) {
+        docStatus = `\nDOCUMENTS SUBMITTED:\n${docItems.join('\n')}`;
+      }
+    }
+
+    // Build payment text
+    const paymentText = `
+═══════════════════════════════════════════════════════════════
+PAYMENT INVOICE - ClearRoute UK
+═══════════════════════════════════════════════════════════════
+
+INVOICE NUMBER: ${invoiceNumber}
+INVOICE DATE: ${invoiceDate}
+
+Dear ${app.first_name} ${app.last_name},
+
+Thank you for choosing ClearRoute UK for your ${serviceName}. 
+Your application has been reviewed and is ready for processing.
+
+═══════════════════════════════════════════════════════════════
+INVOICE DETAILS
+═══════════════════════════════════════════════════════════════
+
+Application ID: ${app.id}
+Service: ${serviceName}
+${pricingInfo?.packageName ? `Package: ${pricingInfo.packageName}` : ''}
+
+PAYMENT SUMMARY:
+${pricingInfo ? `
+Total Cost: £${pricingInfo.totalCost}
+Upfront Payment Due: £${pricingInfo.upfrontPayment}
+Remaining Balance: £${pricingInfo.remainingBalance}` : 'Contact us for pricing details'}
+
+═══════════════════════════════════════════════════════════════
+CLIENT INFORMATION
+═══════════════════════════════════════════════════════════════
+
+Name: ${app.first_name} ${app.last_name}
+Email: ${app.email}
+${app.phone ? `Phone: ${app.phone}` : ''}
+${app.date_of_birth ? `Date of Birth: ${new Date(app.date_of_birth).toLocaleDateString('en-GB')}` : ''}
+${app.nationality ? `Nationality: ${app.nationality}` : ''}
+${app.address ? `Address: ${app.address}` : ''}
+${serviceDetails}
+${docStatus}
+
+═══════════════════════════════════════════════════════════════
+PAYMENT METHODS
+═══════════════════════════════════════════════════════════════
+
+BANK TRANSFER (PREFERRED):
+Account Name: ClearRoute UK
+Account Number: [UPDATE WITH YOUR ACCOUNT NUMBER]
+Sort Code: [UPDATE WITH YOUR SORT CODE]
+Reference: ${app.id}
+
+ALTERNATIVE PAYMENT METHODS:
+• Wise Transfer: Send to info@clearrouteuk.co.uk
+• PayPal: Send to info@clearrouteuk.co.uk
+• WhatsApp: Contact us at +447983312575 for payment link
+
+═══════════════════════════════════════════════════════════════
+IMPORTANT PAYMENT NOTES
+═══════════════════════════════════════════════════════════════
+
+• Please include Application ID (${app.id}) as your payment reference
+${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance} is due upon completion of key milestones` : ''}
+• Work commences within 24 hours of payment confirmation
+• Please send payment confirmation to info@clearrouteuk.co.uk
+
+═══════════════════════════════════════════════════════════════
+
+If you have any questions about this invoice or payment process, 
+please contact us at info@clearrouteuk.co.uk or WhatsApp +447983312575.
+
+© ${new Date().getFullYear()} ClearRoute UK. All rights reserved.
+Registered in England & Wales
+═══════════════════════════════════════════════════════════════
+`.trim();
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(paymentText);
+    
+    _logAudit('payment_mail_copied', { application_id: applicationId });
+    alert('Payment invoice text copied to clipboard! You can now paste it in your email client.');
   } catch (e) {
-    console.error('Send payment email error:', e);
-    alert('Error sending payment email: ' + e.message + '\n\nMake sure the Edge Function is deployed and EmailJS is loaded properly.');
+    console.error('Copy payment mail error:', e);
+    alert('Error copying payment text: ' + e.message);
   }
 };
 
