@@ -77,7 +77,7 @@ function setupServiceForm(serviceType) {
     'driving-licence': {
       title: 'Driving Licence Conversion Application',
       subtitle: 'Convert your foreign driving licence to a UK licence',
-      estimatedTime: '4-8 weeks',
+      estimatedTime: '4-8 days',
       fields: `
         <div class="form-group">
           <label for="drivingPackage">Application Type *</label>
@@ -309,7 +309,7 @@ function setupServiceForm(serviceType) {
     'pco-licence': {
       title: 'PCO Licence Application',
       subtitle: 'Private Hire Vehicle licence application support',
-      estimatedTime: '8-12 weeks',
+      estimatedTime: '15-20 days',
       fields: `
         <div class="form-group">
           <label for="pcoPackage">PCO Licence Package *</label>
@@ -664,7 +664,7 @@ async function submitApplication(supabase, userId, serviceType) {
         service_data: getServiceFormData(formData),
         pricing_info: getPricingInfo(formData, serviceType),
         payment_status: 'pending',
-        estimated_completion: getEstimatedCompletion(serviceType),
+        estimated_completion: getEstimatedCompletion(serviceType, formData),
         created_at: new Date().toISOString()
       }])
       .select()
@@ -832,16 +832,24 @@ function getPricingInfo(formData, serviceType) {
   return {};
 }
 
-function getEstimatedCompletion(serviceType) {
+function getEstimatedCompletion(serviceType, formData) {
+  const dlPackage = formData?.get?.('drivingPackage');
+  if (serviceType === 'driving-licence' && dlPackage) {
+    const dlEstimates = { theory: 4, practical: 6, full: 8 };
+    const days = dlEstimates[dlPackage] || 8;
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString();
+  }
+
   const estimates = {
-    'driving-licence': 42, // 6 weeks
-    'ni-number': 21, // 3 weeks
-    'brp-evisa': 14, // 2 weeks
-    'theory-test': 10, // 1.5 weeks
-    'practical-test': 28, // 4 weeks
-    'address-proof': 10, // 1.5 weeks
-    'bank-account': 10, // 1.5 weeks
-    'pco-licence': 56 // 8 weeks
+    'ni-number': 21,
+    'brp-evisa': 14,
+    'theory-test': 10,
+    'practical-test': 28,
+    'address-proof': 10,
+    'bank-account': 10,
+    'pco-licence': 18
   };
   
   const days = estimates[serviceType] || 21;

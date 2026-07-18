@@ -19,12 +19,24 @@
 8. [Managing Users](#8-managing-users)
 9. [Live Chat Management](#9-live-chat-management)
 10. [Settings & Configuration](#10-settings--configuration)
-11. [How Data Flows Through the System](#11-how-data-flows-through-the-system)
-12. [Guided Simulations — Real Working Scenarios](#12-guided-simulations--real-working-scenarios)
-13. [Things to Do (Best Practices)](#13-things-to-do-best-practices)
-14. [Things NOT to Do (Critical Warnings)](#14-things-not-to-do-critical-warnings)
-15. [Troubleshooting Common Issues](#15-troubleshooting-common-issues)
-16. [Quick Reference Cheat Sheet](#16-quick-reference-cheat-sheet)
+11. [Understanding the Client Experience](#11-understanding-the-client-experience)
+12. [How Data Flows Through the System](#12-how-data-flows-through-the-system)
+13. [Guided Simulations — Real Working Scenarios](#13-guided-simulations--real-working-scenarios)
+14. [Things to Do (Best Practices)](#14-things-to-do-best-practices)
+15. [Things NOT to Do (Critical Warnings)](#15-things-not-to-do-critical-warnings)
+16. [Troubleshooting Common Issues](#16-troubleshooting-common-issues)
+17. [Quick Reference Cheat Sheet](#17-quick-reference-cheat-sheet)
+
+**Appendices:**
+- [A: Service Pricing Reference](#appendix-a-service-pricing-reference)
+- [B: Audit Log Reference](#appendix-b-audit-log-reference)
+- [C: Emergency Procedures](#appendix-c-emergency-procedures)
+- [D: Supabase Dashboard Operations Guide](#appendix-d-supabase-dashboard-operations-guide)
+- [E: EmailJS Template Management](#appendix-emailjs-template-management)
+- [F: Website Content Management](#appendix-f-website-content-management)
+- [G: Glossary of Terms](#appendix-g-glossary-of-terms)
+- [H: Weekly & Monthly Maintenance Checklist](#appendix-h-weekly--monthly-maintenance-checklist)
+- [I: Key Metrics to Track](#appendix-i-key-metrics-to-track)
 
 ---
 
@@ -648,7 +660,59 @@ The Settings page shows:
 
 ---
 
-## 11. How Data Flows Through the System
+## 11. Understanding the Client Experience
+
+To manage the website effectively, you need to understand what clients see and do.
+
+### Client Registration & Login
+
+When a client visits the website:
+1. They see the homepage with services, testimonials, and a "Get Started" button
+2. They can click "Register" to create an account at `/register.html`
+3. Registration requires: first name, last name, email, phone, password
+4. They must accept Terms of Service
+5. After registration, they're redirected to their dashboard at `/dashboard.html`
+6. The dashboard shows: their profile, list of applications, and an option to "Send Email to Admin"
+
+### Client Dashboard Sections
+
+| Section | What the Client Sees |
+|---------|---------------------|
+| **Profile** | Their name, email, phone (editable) |
+| **My Applications** | All their submitted applications with status badges |
+| **Send Email** | Form to send a message directly to the admin |
+| **Quick Actions** | Links to start a new application |
+
+### Application Progress Page
+
+At `/application-progress.html`, clients see:
+- A visual timeline of their application status (like a delivery tracker)
+- Current status with a colored indicator
+- Document upload status
+- Admin notes visible to them
+- Estimated completion date
+
+### The Chatbot Experience
+
+On every page, visitors see a chatbot icon (bottom-right):
+1. They click it → chat window opens
+2. They type a question → the AI responds automatically
+3. If the AI can't help → they can click "Talk to Agent"
+4. They enter their name → placed in the human queue
+5. They wait → when you take over, they see your messages in real-time
+6. When done → they can close the chat or go back to AI
+
+### Why This Matters for You
+
+Understanding the client experience helps you:
+- Know what status updates they can see (they see EVERY status change)
+- Understand why fast responses matter (they're waiting and watching)
+- Realize that admin notes on applications are visible to clients
+- Appreciate that chat messages are real-time — they see typos and delays
+
+---
+
+## 12. How Data Flows Through the System
 
 ### Database Tables Reference
 
@@ -716,7 +780,7 @@ User访问保护页面 → getSession() checks for valid token
 
 ---
 
-## 12. Guided Simulations — Real Working Scenarios
+## 13. Guided Simulations — Real Working Scenarios
 
 ### Simulation 1: First-Time Login & Orientation
 
@@ -961,7 +1025,7 @@ User访问保护页面 → getSession() checks for valid token
 
 ---
 
-## 13. Things to Do (Best Practices)
+## 14. Things to Do (Best Practices)
 
 ### Daily Operations
 
@@ -1000,7 +1064,7 @@ User访问保护页面 → getSession() checks for valid token
 
 ---
 
-## 14. Things NOT to Do (Critical Warnings)
+## 15. Things NOT to Do (Critical Warnings)
 
 ### Account Security
 
@@ -1040,7 +1104,7 @@ User访问保护页面 → getSession() checks for valid token
 
 ---
 
-## 15. Troubleshooting Common Issues
+## 16. Troubleshooting Common Issues
 
 ### "Access denied" when logging into admin panel
 
@@ -1102,7 +1166,7 @@ User访问保护页面 → getSession() checks for valid token
 
 ---
 
-## 16. Quick Reference Cheat Sheet
+## 17. Quick Reference Cheat Sheet
 
 ### URLs
 
@@ -1241,6 +1305,272 @@ Each log entry includes: action type, JSON details, admin email, and timestamp.
 2. Delete spam chat sessions from the Live Chat Inbox
 3. Delete spam user accounts from the Users section
 4. Contact the developer if the spam persists — anti-spam measures may need updating
+
+---
+
+## Appendix D: Supabase Dashboard Operations Guide
+
+You may occasionally need to access the Supabase dashboard directly for administrative tasks that aren't available in the admin panel.
+
+### Accessing the Supabase Dashboard
+
+1. Go to **https://supabase.com/dashboard**
+2. Log in with the Supabase account credentials (ask the developer for these if you don't have them)
+3. Select the project: **clearroute-uk** (Project ID: `lxbsdgvzdqptdatluxlg`)
+
+### Viewing the Audit Log
+
+Since there's no audit log viewer in the admin panel:
+
+1. In Supabase dashboard, go to **Table Editor**
+2. Click on the **audit_log** table
+3. You see all admin actions with timestamps, action types, and details
+4. Use the filter icon to filter by:
+   - `admin_email` = `info@clearrouteuk.co.uk`
+   - `action` = `application_status_change` (or any specific action)
+   - `created_at` = date range
+
+### Viewing All Users
+
+1. Go to **Authentication > Users**
+2. You see all registered auth accounts (email, last sign-in, created date)
+3. To reset a user's password: click the user > "Send magic link" or "Reset password"
+
+### Managing Storage (Uploaded Documents)
+
+1. Go to **Storage**
+2. Click the **documents** bucket
+3. You see all uploaded files organized by application ID
+4. To view a file: click the file name > "Get URL" (temporary)
+5. To delete a file: click the file > Delete (use with caution)
+
+### Running SQL Queries
+
+1. Go to **SQL Editor**
+2. You can run custom queries for data analysis
+
+**Useful queries:**
+
+```sql
+-- Count applications by status
+SELECT status, COUNT(*) as count
+FROM applications
+GROUP BY status
+ORDER BY count DESC;
+
+-- List all applications submitted in the last 7 days
+SELECT first_name, last_name, email, service_type, status, created_at
+FROM applications
+WHERE created_at > NOW() - INTERVAL '7 days'
+ORDER BY created_at DESC;
+
+-- List all enquiries with no response (status = 'new')
+SELECT first_name, last_name, email, service, message, created_at
+FROM enquiries
+WHERE status = 'new'
+ORDER BY created_at DESC;
+
+-- Count users registered this month
+SELECT COUNT(*) as new_users
+FROM profiles
+WHERE created_at > DATE_TRUNC('month', NOW());
+
+-- View recent audit log entries
+SELECT action, admin_email, details, created_at
+FROM audit_log
+ORDER BY created_at DESC
+LIMIT 50;
+```
+
+### Checking Database Health
+
+1. Go to **Database > Backups**
+2. Verify backups are running (Supabase Pro plan includes daily backups)
+3. Go to **Database > Logs** to check for errors
+
+---
+
+## Appendix E: EmailJS Template Management
+
+Emails sent from the admin panel use EmailJS templates. If email sending breaks, the templates may need updating.
+
+### Accessing EmailJS
+
+1. Go to **https://dashboard.emailjs.com**
+2. Log in with the EmailJS account credentials
+
+### Current Templates
+
+| Template | Template ID | Used For |
+|----------|------------|---------|
+| Admin Compose | `template_f8ef8le` | Emails sent from admin panel to clients |
+| Application Receipt | `template_j8x9fvq` | Automatic receipt when application is submitted |
+
+### Template Variables
+
+**Admin Compose Template** — these variables must be available:
+
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `{{to_email}}` | Recipient email | john@example.com |
+| `{{to_name}}` | Recipient name | John Smith |
+| `{{from_name}}` | Sender name | ClearRoute UK |
+| `{{subject}}` | Email subject | Your Application Update |
+| `{{message}}` | Email body (HTML) | `<p>Hello John,</p>` |
+| `{{reply_to}}` | Reply-to address | info@clearrouteuk.co.uk |
+
+### Testing Email Templates
+
+1. In EmailJS dashboard, go to **Email Templates**
+2. Click on the Admin Compose template
+3. Click **"Test Email"** (or similar)
+4. Enter test values for all variables
+5. Send a test email to yourself
+6. Verify it arrives correctly
+
+### If Emails Stop Working
+
+1. Check EmailJS dashboard for quota limits (free plan: 200 emails/month)
+2. Check that the service ID (`service_1i6j9l`) hasn't been deleted
+3. Check that templates haven't been modified or deleted
+4. If you need to update template IDs, contact the developer to update `assets/js/email-service.js`
+
+---
+
+## Appendix F: Website Content Management
+
+The website is a static HTML site. Content changes require editing HTML files and pushing them to GitHub.
+
+### What You Can Change via the Admin Panel
+
+- Application statuses
+- Enquiry statuses and notes
+- Email responses
+- Chat conversations
+- User management
+- Invoice template (localStorage only)
+
+### What Requires Developer Support
+
+All of the following require editing HTML/JS files and deploying via GitHub:
+
+| Change | File to Edit |
+|--------|-------------|
+| Service descriptions/pricing | `services/*.html` |
+| Homepage hero text | `index.html` |
+| About page content | `about.html` |
+| FAQ entries | `faq.html` |
+| Contact information | `contact.html` |
+| Terms of service | `terms.html` |
+| Privacy policy | `privacy.html` |
+| Service pricing tiers | `assets/js/application-form.js` |
+| Chatbot responses/personality | `assets/js/chatbot.js` |
+| Email templates (visual design) | EmailJS dashboard |
+| Bank details in invoices | `admin/js/admin.js` (copyPaymentMail function) |
+| Adding a new service | Multiple files (HTML + JS + SQL) |
+
+### How Content Updates Work
+
+1. Developer edits the HTML/JS file
+2. Developer commits changes to GitHub
+3. Cloudflare Pages auto-deploys (takes 1-2 minutes)
+4. Changes are live on the website
+
+### Important: If You Need Content Changed
+
+Contact the developer with:
+- **Exactly** what text should change
+- **Where** it appears on the website (which page, which section)
+- **The new text** you want (copy-paste ready)
+
+---
+
+## Appendix G: Glossary of Terms
+
+| Term | Definition |
+|------|-----------|
+| **Admin Panel** | The secret management interface at `/admin/` — only you can access it |
+| **Application** | A client's request for a specific service (e.g., Driving Licence Conversion) |
+| **Application Form** | The multi-step form clients fill out to submit a service request |
+| **Audit Log** | Automatic record of every action you take in the admin panel |
+| **Backend** | The server-side system (Supabase) that stores data and handles logic |
+| **CDN** | Content Delivery Network — Cloudflare serves files from servers near the visitor |
+| **Cloudflare Pages** | The hosting platform that makes the website available on the internet |
+| **CSV** | Comma-Separated Values — a spreadsheet format you can open in Excel |
+| **Edge Function** | Server-side code that runs on demand (used for chatbot and email sending) |
+| **EmailJS** | A service that sends emails directly from the browser |
+| **Enquiry** | A message submitted through the website's contact form |
+| **Frontend** | What visitors see — the HTML pages, styles, and interactive features |
+| **JWT** | JSON Web Token — a digital "pass" that proves you're logged in |
+| **localStorage** | Browser storage that saves data on your computer (used for invoice template) |
+| **Realtime** | Instant data updates — messages and status changes appear without refreshing |
+| **RLS** | Row Level Security — database rules that control who can see/edit which records |
+| **Signed URL** | A temporary, secure link to download a file (expires in 60 seconds) |
+| **SPA** | Single-Page Application — the admin panel loads once and switches between views |
+| **Supabase** | The backend platform — provides database, authentication, file storage, and more |
+| **Supabase Dashboard** | Web interface for managing the Supabase backend directly |
+| **Toast Notification** | A small popup message that slides in and auto-dismisses |
+| **Trigger** | A database rule that automatically runs code when data changes |
+| **UUID** | Universally Unique Identifier — a random ID like `a1b2c3d4-...` |
+| **Webhook** | An automatic notification sent when something happens in the system |
+
+---
+
+## Appendix H: Weekly & Monthly Maintenance Checklist
+
+### Daily (5-10 minutes)
+
+- [ ] Check for new chat handoff requests
+- [ ] Process new applications (SUBMITTED status)
+- [ ] Respond to new enquiries (NEW status)
+- [ ] Read unread emails
+
+### Weekly (15-20 minutes)
+
+- [ ] Export applications CSV backup
+- [ ] Export enquiries CSV backup
+- [ ] Review all IN REVIEW applications — update or escalate
+- [ ] Review all PROCESSING applications — update milestones
+- [ ] Check Settings > System Info for total user/app counts (growth tracking)
+- [ ] Clean up resolved/closed enquiries
+- [ ] Delete spam accounts and chat sessions
+
+### Monthly (30 minutes)
+
+- [ ] Full audit of all open applications — ensure nothing is stuck
+- [ ] Review pricing — confirm it's current and correct
+- [ ] Check EmailJS dashboard for email quota usage
+- [ ] Review the website homepage — note any content that needs updating
+- [ ] Check the chatbot — test it to ensure it's working correctly
+- [ ] Back up all data via CSV exports
+- [ ] Review admin notes across all applications for completeness
+- [ ] Test document downloads to ensure they work
+- [ ] Send yourself a test email from the compose feature
+
+### Quarterly
+
+- [ ] Review this training guide for any updates
+- [ ] Check if any new services need to be added
+- [ ] Review FAQ page for common questions that should be added
+- [ ] Check Supabase dashboard for database size and storage usage
+- [ ] Review email templates for accuracy
+
+---
+
+## Appendix I: Key Metrics to Track
+
+As an admin, these are the numbers you should keep an eye on:
+
+| Metric | Where to Find | Why It Matters |
+|--------|--------------|----------------|
+| New applications per week | Applications > filter by SUBMITTED | Business growth indicator |
+| Application approval rate | Count APPROVED vs total | Service quality indicator |
+| Average time from SUBMITTED to APPROVED | Compare dates on applications | Operational efficiency |
+| New enquiries per week | Enquiries > count NEW entries | Marketing effectiveness |
+| Enquiry-to-application conversion | Enquiries that become applications | Sales pipeline health |
+| Chat handoff frequency | Dashboard > Active Sessions count | Chatbot effectiveness |
+| User registrations per month | Settings > Total Users (compare monthly) | Growing customer base |
+| Email response time | Time between UNREAD and REPLIED | Customer service quality |
 
 ---
 
