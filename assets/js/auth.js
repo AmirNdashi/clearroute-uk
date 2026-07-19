@@ -2,6 +2,18 @@
    CLEARROUTE UK — AUTHENTICATION
    ============================================================ */
 
+const LOGIN_RATE_LIMIT = 5;
+const LOGIN_RATE_WINDOW = 60000;
+let loginAttempts = [];
+
+function isLoginRateLimited() {
+  const now = Date.now();
+  loginAttempts = loginAttempts.filter(t => t > now - LOGIN_RATE_WINDOW);
+  if (loginAttempts.length >= LOGIN_RATE_LIMIT) return true;
+  loginAttempts.push(now);
+  return false;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   let supabase;
   try {
@@ -127,6 +139,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (window.isAdminEmail?.(email)) {
         errorDiv.textContent = 'This account uses the admin panel. Please sign in at /admin/';
+        return;
+      }
+
+      if (isLoginRateLimited()) {
+        errorDiv.textContent = 'Too many login attempts. Please wait before trying again.';
         return;
       }
       

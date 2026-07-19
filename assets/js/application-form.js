@@ -859,12 +859,14 @@ function getEstimatedCompletion(serviceType, formData) {
 }
 
 async function sendNotificationEmail(application, formData, serviceType) {
+  console.log('sendNotificationEmail: Function entered.', { application, serviceType });
   try {
+    const sb = await window.getSupabase();
     const pricingInfo = getPricingInfo(formData, serviceType);
     const serviceData = getServiceFormData(formData);
     
     // Get document information
-    const { data: documents } = await supabase
+    const { data: documents } = await sb
       .from('application_documents')
       .select('*')
       .eq('application_id', application.id)
@@ -878,7 +880,7 @@ async function sendNotificationEmail(application, formData, serviceType) {
       address: formData.get('address')
     };
     
-    const { data, error } = await supabase.functions.invoke('send-application-emails', {
+    const { data, error } = await sb.functions.invoke('send-application-emails', {
       body: {
         application: {
           id: application.id,
@@ -896,14 +898,15 @@ async function sendNotificationEmail(application, formData, serviceType) {
         emailType: 'receipt'
       }
     });
+    console.log("sendNotificationEmail: Invoking Supabase function with body:", { application, userData, serviceData, pricingInfo, documents, emailType: 'receipt' });
     
     if (error) {
-      console.error('Error sending emails:', error);
+      console.error("sendNotificationEmail: Error invoking Supabase function:", error);
     } else {
-      console.log('Emails sent successfully:', data);
+      console.log("sendNotificationEmail: Supabase function invoked successfully:", data);
     }
   } catch (error) {
-    console.error('Error in sendNotificationEmail:', error);
+    console.error("sendNotificationEmail: Caught error during function invocation:", error);
   }
 }
 

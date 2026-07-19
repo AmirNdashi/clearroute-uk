@@ -471,7 +471,7 @@ function addMessage(text, sender = 'bot', skipSave = false) {
   div.className = `rb-msg ${sender}`;
   div.innerHTML = `
     <div class="rb-msg-avatar">${avatars[sender]}</div>
-    <div class="rb-msg-bubble">${text.replace(/\n/g, '<br/>')}</div>
+    <div class="rb-msg-bubble">${window.escapeHtml(text).replace(/\n/g, '<br/>')}</div>
   `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
@@ -1026,7 +1026,7 @@ function restoreConversation() {
     div.className = `rb-msg ${m.role}`;
     div.innerHTML = `
       <div class="rb-msg-avatar">${avatars[m.role]}</div>
-      <div class="rb-msg-bubble">${m.content.replace(/\n/g, '<br/>')}</div>
+      <div class="rb-msg-bubble">${window.escapeHtml(m.content).replace(/\n/g, '<br/>')}</div>
     `;
     container.appendChild(div);
   });

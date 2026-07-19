@@ -122,13 +122,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    toast.setAttribute('role', 'alert');
     toast.innerHTML = `<span>${icons[type] || icons.default}</span><span>${message}</span>`;
     container.appendChild(toast);
 
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       toast.style.animation = 'slideInRight 0.4s cubic-bezier(0.4,0,0.2,1) reverse';
       setTimeout(() => toast.remove(), 400);
     }, duration);
+
+    return {
+      undo(label = 'Undo', onUndo) {
+        if (typeof onUndo !== 'function') return;
+        const undoBtn = document.createElement('button');
+        undoBtn.textContent = label;
+        undoBtn.style.cssText = 'margin-left:12px;padding:4px 12px;border-radius:6px;border:1px solid currentColor;background:transparent;color:inherit;font-weight:700;cursor:pointer;font-size:0.8rem;flex-shrink:0;';
+        undoBtn.addEventListener('click', () => {
+          clearTimeout(timeout);
+          toast.remove();
+          onUndo();
+        });
+        toast.appendChild(undoBtn);
+      }
+    };
   };
 
   // --- Smooth page transitions ---

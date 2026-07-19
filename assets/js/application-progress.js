@@ -137,6 +137,7 @@ function updateApplicationHeader(application) {
   document.getElementById('appServiceName').textContent = serviceNames[application.service_type] || application.service_type;
   document.getElementById('appServiceDescription').textContent = `Application submitted on ${formatDate(application.created_at)}`;
   document.getElementById('appStatus').textContent = formatStatus(application.status);
+  document.getElementById('appId').textContent = `ID: ${application.id ? application.id.slice(0, 8) : '---'}...`;
   document.getElementById('appStatus').className = `status-badge ${getStatusClass(application.status)}`;
   document.getElementById('appId').textContent = `ID: ${application.id.slice(0, 8)}...`;
 }
@@ -207,15 +208,15 @@ function updateApplicationDetails(application) {
   const detailsHTML = `
     <div class="detail-item">
       <div class="detail-label">Full Name</div>
-      <div class="detail-value">${application.first_name} ${application.last_name}</div>
+      <div class="detail-value">${window.escapeHtml(application.first_name)} ${window.escapeHtml(application.last_name)}</div>
     </div>
     <div class="detail-item">
       <div class="detail-label">Email</div>
-      <div class="detail-value">${application.email}</div>
+      <div class="detail-value">${window.escapeHtml(application.email)}</div>
     </div>
     <div class="detail-item">
       <div class="detail-label">Phone</div>
-      <div class="detail-value">${application.phone}</div>
+      <div class="detail-value">${window.escapeHtml(application.phone)}</div>
     </div>
     <div class="detail-item">
       <div class="detail-label">Date of Birth</div>
@@ -223,11 +224,11 @@ function updateApplicationDetails(application) {
     </div>
     <div class="detail-item">
       <div class="detail-label">Nationality</div>
-      <div class="detail-value">${application.nationality}</div>
+      <div class="detail-value">${window.escapeHtml(application.nationality)}</div>
     </div>
     <div class="detail-item">
       <div class="detail-label">Address</div>
-      <div class="detail-value">${application.address}</div>
+      <div class="detail-value">${window.escapeHtml(application.address)}</div>
     </div>
     <div class="detail-item">
       <div class="detail-label">Application Date</div>
@@ -303,7 +304,7 @@ function updateAdminNotes(notes) {
         <span class="note-author">${note.admin_name || 'Admin'}</span>
         <span class="note-date">${formatDate(note.created_at)}</span>
       </div>
-      <div class="note-content">${note.note}</div>
+      <div class="note-content">${window.escapeHtml(note.note)}</div>
     </div>
   `).join('');
 
@@ -343,7 +344,7 @@ function updateResultSection(application) {
       </div>
       <div class="result-title">Application Not Approved</div>
       <div class="result-message">
-        ${application.rejection_reason || 'Unfortunately, your application could not be approved at this time. Please check the admin notes for more details.'}
+        ${window.escapeHtml(application.rejection_reason || 'Unfortunately, your application could not be approved at this time. Please check the admin notes for more details.')}
       </div>
       <div class="result-actions">
         <a href="dashboard.html" class="btn btn-primary">

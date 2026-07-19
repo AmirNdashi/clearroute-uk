@@ -195,49 +195,54 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_queue ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_replies ENABLE ROW LEVEL SECURITY;
 
--- Chat sessions policies - public read (for admin), anyone can create
+-- Chat sessions policies - only admins can read; anyone can create (for anonymous chat)
 DROP POLICY IF EXISTS "Anyone can create chat sessions" ON chat_sessions;
 CREATE POLICY "Anyone can create chat sessions"
   ON chat_sessions FOR INSERT
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Public can read chat sessions" ON chat_sessions;
-CREATE POLICY "Public can read chat sessions"
+DROP POLICY IF EXISTS "Admins can read chat sessions" ON chat_sessions;
+CREATE POLICY "Admins can read chat sessions"
   ON chat_sessions FOR SELECT
-  USING (true);
+  USING (public.is_admin());
 
--- Chat messages policies - public read, anyone can create
+DROP POLICY IF EXISTS "Admins can update chat sessions" ON chat_sessions;
+CREATE POLICY "Admins can update chat sessions"
+  ON chat_sessions FOR UPDATE
+  USING (public.is_admin());
+
+-- Chat messages policies - only admins can read; anyone can create (for anonymous chat)
 DROP POLICY IF EXISTS "Anyone can create chat messages" ON chat_messages;
 CREATE POLICY "Anyone can create chat messages"
   ON chat_messages FOR INSERT
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Public can read chat messages" ON chat_messages;
-CREATE POLICY "Public can read chat messages"
+DROP POLICY IF EXISTS "Admins can read chat messages" ON chat_messages;
+CREATE POLICY "Admins can read chat messages"
   ON chat_messages FOR SELECT
-  USING (true);
+  USING (public.is_admin());
 
--- Admin queue policies - public read, anyone can create
+-- Admin queue policies - only admins can read; anyone can create (for handoff requests)
 DROP POLICY IF EXISTS "Anyone can create admin queue" ON admin_queue;
 CREATE POLICY "Anyone can create admin queue"
   ON admin_queue FOR INSERT
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Public can read admin queue" ON admin_queue;
-CREATE POLICY "Public can read admin queue"
+DROP POLICY IF EXISTS "Admins can read admin queue" ON admin_queue;
+CREATE POLICY "Admins can read admin queue"
   ON admin_queue FOR SELECT
-  USING (true);
+  USING (public.is_admin());
 
--- Admin replies policies - public read, anyone can create
+-- Admin replies policies - only admins can read; anyone can create
 DROP POLICY IF EXISTS "Anyone can create admin replies" ON admin_replies;
 CREATE POLICY "Anyone can create admin replies"
   ON admin_replies FOR INSERT
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Public can read admin replies" ON admin_replies;
-CREATE POLICY "Public can read admin replies"
+DROP POLICY IF EXISTS "Admins can read admin replies" ON admin_replies;
+CREATE POLICY "Admins can read admin replies"
   ON admin_replies FOR SELECT
-  USING (true);
+  USING (public.is_admin());
 
 -- Note: Uses DROP POLICY IF EXISTS to handle existing policies safely
 

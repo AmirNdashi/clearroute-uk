@@ -13,6 +13,14 @@ window.isAdminEmail = (email) => {
   if (!email) return false;
   return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase();
 };
+
+// HTML escape utility — prevents XSS in innerHTML rendering
+window.escapeHtml = (str) => {
+  if (!str && str !== 0) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+};
 // ─────────────────────────────────────────────────────────────
 
 // Load Supabase via CDN (no npm needed)

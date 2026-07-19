@@ -82,7 +82,10 @@
       </div>
 
       <div class="admin-sidebar-section">
-        <div class="admin-sidebar-section-title">Settings</div>
+        <div class="admin-sidebar-section-title">System</div>
+        <div class="admin-nav-item" data-page="audit-log">
+          <i class="fas fa-history"></i> Audit Log
+        </div>
         <div class="admin-nav-item" data-page="settings">
           <i class="fas fa-cog"></i> Settings
         </div>
@@ -279,6 +282,7 @@
             <select id="appServiceFilter" onchange="filterApplications()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
               <option value="">All Services</option>
               <option value="driving-licence">Driving Licence</option>
+              <option value="pco-licence">PCO Licence</option>
               <option value="ni-number">NI Number</option>
               <option value="brp-evisa">BRP / eVisa</option>
               <option value="theory-test">Theory Test</option>
@@ -406,6 +410,44 @@
             <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
               Select a user to view details
             </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AUDIT LOG ── -->
+      <div class="admin-page" id="page-audit-log">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><i class="fas fa-history" style="color:#D4735E;margin-right:8px;"></i>Audit Log</h3>
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadAuditLog()">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <input type="text" id="auditSearch" placeholder="Search action or admin..." oninput="filterAuditLog()" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;" />
+            <select id="auditActionFilter" onchange="filterAuditLog()" style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+              <option value="">All Actions</option>
+              <option value="login">Login</option>
+              <option value="application_status_change">Status Change</option>
+              <option value="application_deleted">App Deleted</option>
+              <option value="payment_mail_copied">Payment Mail</option>
+              <option value="email_sent">Email Sent</option>
+              <option value="enquiry_status_change">Enquiry Status</option>
+              <option value="enquiry_deleted">Enquiry Deleted</option>
+              <option value="chat_session_deleted">Chat Deleted</option>
+              <option value="user_deleted">User Deleted</option>
+            </select>
+            <span style="font-size:0.8rem;color:#9CA3AF;" id="auditCount"></span>
+          </div>
+          <div style="padding:20px;" id="auditLogList">
+            <p style="color:#9CA3AF;font-size:0.88rem;text-align:center;padding:24px 0;">
+              Loading audit log...
+            </p>
+          </div>
+          <div id="auditLoadMoreWrap" style="padding:0 20px 20px;display:none;text-align:center;">
+            <button class="admin-btn admin-btn-small admin-btn-outline" onclick="loadMoreAuditLog()" id="auditLoadMoreBtn">
+              <i class="fas fa-chevron-down"></i> Load More
+            </button>
           </div>
         </div>
       </div>

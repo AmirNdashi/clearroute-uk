@@ -9,6 +9,18 @@ let queueChannel = null;
 let notifySound  = null;
 let prevSessionIds = new Set();
 
+const ADMIN_LOGIN_RATE_LIMIT = 5;
+const ADMIN_LOGIN_RATE_WINDOW = 60000;
+let adminLoginAttempts = [];
+
+function isAdminLoginRateLimited() {
+  const now = Date.now();
+  adminLoginAttempts = adminLoginAttempts.filter(t => t > now - ADMIN_LOGIN_RATE_WINDOW);
+  if (adminLoginAttempts.length >= ADMIN_LOGIN_RATE_LIMIT) return true;
+  adminLoginAttempts.push(now);
+  return false;
+}
+
 /* ════════════════════════════════════════
    BOOT — wait for Supabase
 ════════════════════════════════════════ */
@@ -138,6 +150,12 @@ document.getElementById('authBtn').addEventListener('click', async () => {
 
   if (!window.isAdminEmail?.(email)) {
     errEl.textContent = 'Access denied. Only the authorised admin account can sign in here.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (isAdminLoginRateLimited()) {
+    errEl.textContent = 'Too many login attempts. Please wait before trying again.';
     errEl.style.display = 'block';
     return;
   }
@@ -283,13 +301,13 @@ function _renderEmailCard(email) {
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-          ${email.sender_name}
+          ${window.escapeHtml(email.sender_name)}
         </div>
         <div style="font-size:0.82rem;color:#6B7280;">
-          ${email.sender_email}
+          ${window.escapeHtml(email.sender_email)}
         </div>
         <div style="font-size:0.85rem;color:#374151;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${email.subject}
+          ${window.escapeHtml(email.subject)}
         </div>
       </div>
       <div style="text-align:right;">
@@ -409,7 +427,7 @@ window.viewEmail = async function(emailId) {
 
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Message</h4>
-            <p style="font-size:0.9rem;color:#374151;line-height:1.6;white-space:pre-wrap;">${email.message}</p>
+            <p style="font-size:0.9rem;color:#374151;line-height:1.6;white-space:pre-wrap;">${window.escapeHtml(email.message)}</p>
           </div>
         </div>
 
@@ -428,7 +446,7 @@ window.viewEmail = async function(emailId) {
 
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
-            <button onclick="openEmailModal({recipientId:'${email.id}',recipientType:'applicant_email',email:'${email.sender_email}',name:'${email.sender_name}',subject:'Re: ${email.subject}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
+            <button onclick='openEmailModal({recipientId:"${email.id}",recipientType:"applicant_email",email:"${window.escapeHtml(email.sender_email)}",name:"${window.escapeHtml(email.sender_name)}",subject:"Re: ${window.escapeHtml(email.subject)}"})' class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
               <i class="fas fa-reply"></i> Reply via Email
             </button>
           </div>
@@ -479,18 +497,26 @@ window.updateEmailStatus = async function(emailId) {
 };
 
 window.deleteEmail = async function(emailId) {
-  if (!confirm('Permanently delete this email? This cannot be undone.')) return;
-  try {
-    const { data, error } = await db.from('applicant_emails').delete().eq('id', emailId).select();
-    if (error) throw error;
-    _logAudit('email_deleted', { email_id: emailId });
-    alert('Email deleted');
-    loadEmailInbox();
-    showPage('email-inbox');
-  } catch (e) {
-    console.error('Delete email error:', e);
-    alert('Error deleting email: ' + e.message);
+  if (!confirm('Delete this email?')) return;
+
+  const { data, error } = await db.from('applicant_emails').delete().eq('id', emailId).select();
+  if (error) {
+    console.error('Delete email error:', error);
+    window.showToast('Error deleting email: ' + error.message, 'error', 4000);
+    return;
   }
+  _logAudit('email_deleted', { email_id: emailId });
+  const toast = window.showToast('Email deleted', 'success', 6000);
+  toast.undo('Undo', async () => {
+    try {
+      if (data?.[0]) await db.from('applicant_emails').insert(data[0]);
+      window.showToast('Email restored', 'success', 3000);
+    } catch {
+      window.showToast('Could not restore email', 'error', 4000);
+    }
+  });
+  loadEmailInbox();
+  showPage('email-inbox');
 };
 
 /* ════════════════════════════════════════
@@ -515,10 +541,10 @@ function _renderEnqCard(enq) {
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-          ${enq.first_name} ${enq.last_name}
+          ${window.escapeHtml(enq.first_name)} ${window.escapeHtml(enq.last_name)}
         </div>
         <div style="font-size:0.82rem;color:#6B7280;">
-          ${enq.email} · ${enq.service}
+          ${window.escapeHtml(enq.email)} · ${window.escapeHtml(enq.service)}
         </div>
       </div>
       <div style="text-align:right;">
@@ -670,20 +696,20 @@ window.viewEnquiry = async function(enquiryId) {
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Enquiry Information</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
-              <div><strong>Name:</strong> ${enquiry.first_name} ${enquiry.last_name}</div>
-              <div><strong>Email:</strong> ${enquiry.email}</div>
-              <div><strong>Phone:</strong> ${enquiry.phone || 'Not provided'}</div>
-              <div><strong>Nationality:</strong> ${enquiry.nationality}</div>
-              <div><strong>Service:</strong> ${enquiry.service}</div>
-              <div><strong>Status:</strong> ${enquiry.status.toUpperCase()}</div>
+              <div><strong>Name:</strong> ${window.escapeHtml(enquiry.first_name)} ${window.escapeHtml(enquiry.last_name)}</div>
+              <div><strong>Email:</strong> ${window.escapeHtml(enquiry.email)}</div>
+              <div><strong>Phone:</strong> ${window.escapeHtml(enquiry.phone || 'Not provided')}</div>
+              <div><strong>Nationality:</strong> ${window.escapeHtml(enquiry.nationality)}</div>
+              <div><strong>Service:</strong> ${window.escapeHtml(enquiry.service)}</div>
+              <div><strong>Status:</strong> ${window.escapeHtml(enquiry.status.toUpperCase())}</div>
               <div><strong>Submitted:</strong> ${new Date(enquiry.created_at).toLocaleDateString('en-GB')}</div>
-              <div><strong>Enquiry ID:</strong> ${enquiry.id.slice(0, 12)}...</div>
+              <div><strong>Enquiry ID:</strong> ${window.escapeHtml(enquiry.id.slice(0, 12))}...</div>
             </div>
           </div>
 
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Message</h4>
-            <p style="font-size:0.9rem;color:#374151;line-height:1.6;white-space:pre-wrap;">${enquiry.message}</p>
+            <p style="font-size:0.9rem;color:#374151;line-height:1.6;white-space:pre-wrap;">${window.escapeHtml(enquiry.message)}</p>
           </div>
         </div>
 
@@ -711,7 +737,7 @@ window.viewEnquiry = async function(enquiryId) {
 
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-top:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Quick Actions</h4>
-            <button onclick="openEmailModal({recipientId:'${enquiry.id}',recipientType:'enquiry',email:'${enquiry.email}',name:'${enquiry.first_name} ${enquiry.last_name}',subject:'Re: ${enquiry.service}'})" class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
+            <button onclick='openEmailModal({recipientId:"${enquiry.id}",recipientType:"enquiry",email:"${window.escapeHtml(enquiry.email)}",name:"${window.escapeHtml(enquiry.first_name)} ${window.escapeHtml(enquiry.last_name)}",subject:"Re: ${window.escapeHtml(enquiry.service)}"})' class="admin-btn admin-btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Reply via Email
             </button>
             ${enquiry.phone ? `
@@ -740,18 +766,27 @@ window.viewEnquiry = async function(enquiryId) {
 };
 
 window.deleteEnquiry = async function(enquiryId) {
-  if (!confirm('Permanently delete this enquiry? This cannot be undone.')) return;
+  if (!confirm('Delete this enquiry?')) return;
+
   try {
     const { data, error } = await db.from('enquiries').delete().eq('id', enquiryId).select();
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
     _logAudit('enquiry_deleted', { enquiry_id: enquiryId });
-    alert('Enquiry deleted');
+    const toast = window.showToast('Enquiry deleted', 'success', 6000);
+    toast.undo('Undo', async () => {
+      try {
+        if (data?.[0]) await db.from('enquiries').insert(data[0]);
+        window.showToast('Enquiry restored', 'success', 3000);
+      } catch {
+        window.showToast('Could not restore enquiry', 'error', 4000);
+      }
+    });
     loadEnquiries();
     showPage('enquiries');
   } catch (e) {
     console.error('Delete enquiry error:', e);
-    alert('Error deleting enquiry: ' + e.message);
+    window.showToast('Error deleting enquiry: ' + e.message, 'error', 4000);
   }
 };
 
@@ -846,10 +881,13 @@ window.loadUsers = async function() {
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-            ${user.first_name} ${user.last_name || 'User'}
+            ${window.escapeHtml(user.first_name)} ${window.escapeHtml(user.last_name || 'User')}
           </div>
           <div style="font-size:0.82rem;color:#6B7280;">
-            ${user.email}
+            ${window.escapeHtml(user.email)}
+          </div>
+          <div style="font-size:0.78rem;color:#9CA3AF;">
+            ${user.phone ? window.escapeHtml(user.phone) : ''}
           </div>
         </div>
         <div style="text-align:right;display:flex;align-items:center;gap:10px;">
@@ -898,10 +936,10 @@ window.viewUser = async function(userId) {
           <div class="admin-detail-section">
             <h4>User Profile</h4>
             <div class="admin-detail-grid">
-              <div><strong>Name:</strong> ${user.first_name} ${user.last_name || 'N/A'}</div>
-              <div><strong>Email:</strong> ${user.email}</div>
-              <div><strong>Phone:</strong> ${user.phone || 'Not provided'}</div>
-              <div><strong>User ID:</strong> ${user.id.slice(0, 12)}...</div>
+              <div><strong>Name:</strong> ${window.escapeHtml(user.first_name)} ${window.escapeHtml(user.last_name || 'N/A')}</div>
+              <div><strong>Email:</strong> ${window.escapeHtml(user.email)}</div>
+              <div><strong>Phone:</strong> ${window.escapeHtml(user.phone || 'Not provided')}</div>
+              <div><strong>User ID:</strong> ${window.escapeHtml(user.id.slice(0, 12))}...</div>
               <div><strong>Joined:</strong> ${new Date(user.created_at).toLocaleDateString('en-GB')}</div>
               <div><strong>Last Updated:</strong> ${new Date(user.updated_at).toLocaleDateString('en-GB')}</div>
             </div>
@@ -913,8 +951,8 @@ window.viewUser = async function(userId) {
               <div class="admin-app-list">
                 ${applications.map(app => `
                   <div class="admin-app-item" onclick="viewApplication('${app.id}')">
-                    <div class="admin-app-service">${app.service_type.replace('-', ' ').toUpperCase()}</div>
-                    <div class="admin-app-meta">Status: ${app.status.toUpperCase()} · ${new Date(app.created_at).toLocaleDateString('en-GB')}</div>
+                    <div class="admin-app-service">${window.escapeHtml(app.service_type.replace('-', ' ').toUpperCase())}</div>
+                    <div class="admin-app-meta">Status: ${window.escapeHtml(app.status.toUpperCase())} · ${new Date(app.created_at).toLocaleDateString('en-GB')}</div>
                   </div>
                 `).join('')}
               </div>
@@ -925,7 +963,7 @@ window.viewUser = async function(userId) {
         <div class="admin-detail-sidebar">
           <div class="admin-detail-section">
             <h4>Quick Actions</h4>
-            <button onclick="openEmailModal({recipientId:'${user.id}',recipientType:'user',email:'${user.email}',name:'${user.first_name} ${user.last_name || ''}'})" class="admin-btn admin-btn-outline admin-btn-block">
+            <button onclick='openEmailModal({recipientId:"${user.id}",recipientType:"user",email:"${window.escapeHtml(user.email)}",name:"${window.escapeHtml(user.first_name)} ${window.escapeHtml(user.last_name || "")}"})' class="admin-btn admin-btn-outline admin-btn-block">
               <i class="fas fa-envelope"></i> Send Email
             </button>
             ${user.phone ? `
@@ -954,22 +992,19 @@ window.viewUser = async function(userId) {
 };
 
 window.deleteUser = async function(userId) {
-  if (!confirm('Permanently delete this user and ALL their data (applications, documents, notes, chat sessions, messages)? This cannot be undone.')) return;
-  if (!confirm('ARE YOU SURE? This will remove every trace of this user from the system. Type OK to confirm.')) return;
+  if (!confirm('Delete this user and ALL their data (applications, documents, notes, chat sessions, messages)?')) return;
+  if (!confirm('ARE YOU SURE? This cannot be reversed. Type OK to confirm.')) return;
+
   try {
-    // Delete application notes
     const { data: userApps } = await db.from('applications').select('id').eq('user_id', userId);
     const appIds = userApps?.map(a => a.id) || [];
     for (const appId of appIds) {
-      const { data: nd, error: ne } = await db.from('application_notes').delete().eq('application_id', appId).select();
-      if (ne) throw ne;
-      const { data: dd, error: de } = await db.from('application_documents').delete().eq('application_id', appId).select();
-      if (de) throw de;
+      await db.from('application_notes').delete().eq('application_id', appId).select();
+      await db.from('application_documents').delete().eq('application_id', appId).select();
     }
     const { data: ad, error: ae } = await db.from('applications').delete().eq('user_id', userId).select();
     if (ae) throw ae;
 
-    // Delete chat messages & sessions
     const { data: sessions } = await db.from('chat_sessions').select('id').eq('user_id', userId);
     const sessIds = sessions?.map(s => s.id) || [];
     for (const sid of sessIds) {
@@ -980,18 +1015,17 @@ window.deleteUser = async function(userId) {
     const { data: sd, error: se } = await db.from('chat_sessions').delete().eq('user_id', userId).select();
     if (se) throw se;
 
-    // Delete profile
     const { data: pd, error: pe } = await db.from('profiles').delete().eq('id', userId).select();
     if (pe) throw pe;
     if (!pd || pd.length === 0) throw new Error('Profile delete failed — admin RLS permission missing. Run the updated schema.');
 
     _logAudit('user_deleted', { user_id: userId });
-    alert('User and all associated data deleted');
+    window.showToast('User and all associated data deleted', 'success', 5000);
     loadUsers();
     showPage('users');
   } catch (e) {
     console.error('Delete user error:', e);
-    alert('Error deleting user: ' + e.message + '\n\nYou may need to delete the user from Supabase Auth dashboard manually.');
+    window.showToast('Error: ' + e.message, 'error', 6000);
   }
 };
 
@@ -1020,6 +1054,14 @@ const _statusClasses = {
   'processing': 'background:#E0E7FF;color:#3730A3',
   'approved': 'background:#D1FAE5;color:#047857',
   'rejected': 'background:#FEE2E2;color:#B91C1C'
+};
+
+window.toggleRejectionReason = function() {
+  const sel = document.getElementById('statusUpdate');
+  const wrap = document.getElementById('rejectionReasonWrap');
+  if (wrap) {
+    wrap.style.display = sel?.value === 'rejected' ? 'block' : 'none';
+  }
 };
 
 function _renderAppCard(app) {
@@ -1134,6 +1176,7 @@ window.exportApplicationsCSV = function() {
 };
 
 window.viewApplication = async function(applicationId) {
+  window._currentApplicationId = applicationId;
   try {
     const { data: application, error } = await db
       .from('applications')
@@ -1168,36 +1211,68 @@ window.viewApplication = async function(applicationId) {
       'pco-licence': 'PCO Licence Application'
     };
 
+    const pricingInfo = application.pricing_info && Object.keys(application.pricing_info).length > 0 ? application.pricing_info : null;
+    const paymentStatusColors = { pending: '#FEF3C7;#B45309', paid: '#D1FAE5;#047857', partial: '#FEF3C7;#B45309', refunded: '#FEE2E2;#B91C1C' };
+    const psColor = paymentStatusColors[application.payment_status] || '#F3F4F6;#6B7280';
+    const psParts = psColor.split(';');
+
     const detailHTML = `
       <div class="admin-detail-layout">
         <div class="admin-detail-main">
           <div class="admin-detail-section">
             <h4>Application Information</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
-              <div><strong>Service:</strong> ${serviceNames[application.service_type] || application.service_type}</div>
-              <div><strong>Status:</strong> ${application.status.toUpperCase()}</div>
+              <div><strong>Service:</strong> ${window.escapeHtml(serviceNames[application.service_type] || application.service_type)}</div>
+              <div><strong>Status:</strong> ${window.escapeHtml(application.status.toUpperCase())}</div>
               <div><strong>Submitted:</strong> ${new Date(application.created_at).toLocaleDateString('en-GB')}</div>
-              <div><strong>Application ID:</strong> ${application.id.slice(0, 12)}...</div>
+              <div><strong>Application ID:</strong> ${window.escapeHtml(application.id.slice(0, 12))}...</div>
+              <div><strong>Payment:</strong> <span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;background:${psParts[0]};color:${psParts[1]};">${(application.payment_status || 'pending').toUpperCase()}</span></div>
+              ${application.estimated_completion ? `<div><strong>Est. Completion:</strong> ${new Date(application.estimated_completion).toLocaleDateString('en-GB')}</div>` : ''}
+              ${application.rejection_reason ? `<div style="grid-column:1/-1;background:#FEE2E2;padding:8px 12px;border-radius:6px;color:#B91C1C;"><strong>Rejection Reason:</strong> ${window.escapeHtml(application.rejection_reason)}</div>` : ''}
             </div>
           </div>
 
-          ${application.service_data && (application.service_data.drivingPackage || application.service_data.pcoPackage) ? `
+          ${pricingInfo ? `
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Pricing & Payment</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:0.9rem;">
+              <div style="background:#E0E7FF;border-radius:8px;padding:12px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:800;color:#3730A3;">£${pricingInfo.totalCost || pricingInfo.total_cost || 0}</div>
+                <div style="font-size:0.75rem;color:#6B7280;">Total Cost</div>
+              </div>
+              <div style="background:#FEF3C7;border-radius:8px;padding:12px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:800;color:#B45309;">£${pricingInfo.upfrontPayment || pricingInfo.upfront_payment || 0}</div>
+                <div style="font-size:0.75rem;color:#6B7280;">Upfront Due</div>
+              </div>
+              <div style="background:#F3F4F6;border-radius:8px;padding:12px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:800;color:#6B7280;">£${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0}</div>
+                <div style="font-size:0.75rem;color:#6B7280;">Remaining</div>
+              </div>
+              ${pricingInfo.packageName ? `<div style="grid-column:1/-1;text-align:center;font-size:0.85rem;color:#6B7280;">Package: ${window.escapeHtml(pricingInfo.packageName)}</div>` : ''}
+            </div>
+          </div>
+          ` : ''}
+
+          ${application.service_data && Object.keys(application.service_data).length > 0 ? `
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Service Details</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
-              <div style="grid-column:1/-1;">
-                <strong>Selected Package:</strong> ${(() => {
-                  const sd = application.service_data;
-                  const pkg = sd.drivingPackage || sd.pcoPackage;
-                  const names = {
-                    'driving-licence': { theory:'Theory Test Support', practical:'Practical Test Support', full:'Full Licence Conversion' },
-                    'pco-licence': { theory:'Theory Test Package', practical:'Practical Test Package', full:'Full Licence Package', complete:'Complete PCO Licence' }
-                  };
-                  const map = names[application.service_type];
-                  const display = map && map[pkg] ? map[pkg] : pkg;
-                  return display || 'N/A';
-                })()}
-              </div>
+              ${Object.entries(application.service_data).filter(([k]) => k !== 'drivingPackage' && k !== 'pcoPackage').map(([key, value]) => {
+                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+                return `<div${key === 'pcoAdditionalInfo' || key === 'reasonForNI' || value?.length > 60 ? ' style="grid-column:1/-1;"' : ''}><strong>${label}:</strong> ${window.escapeHtml(String(value))}</div>`;
+              }).join('')}
+              ${(() => {
+                const sd = application.service_data;
+                const pkg = sd.drivingPackage || sd.pcoPackage;
+                if (!pkg) return '';
+                const names = {
+                  'driving-licence': { theory:'Theory Test Support', practical:'Practical Test Support', full:'Full Licence Conversion' },
+                  'pco-licence': { theory:'Theory Test Package', practical:'Practical Test Package', full:'Full Licence Package', complete:'Complete PCO Licence' }
+                };
+                const map = names[application.service_type];
+                const display = map && map[pkg] ? map[pkg] : pkg;
+                return `<div style="grid-column:1/-1;"><strong>Package:</strong> ${display}</div>`;
+              })()}
             </div>
           </div>
           ` : ''}
@@ -1205,19 +1280,19 @@ window.viewApplication = async function(applicationId) {
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Personal Information</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.9rem;">
-              <div><strong>Name:</strong> ${application.first_name} ${application.last_name}</div>
-              <div><strong>Email:</strong> ${application.email}</div>
-              <div><strong>Phone:</strong> ${application.phone}</div>
+              <div><strong>Name:</strong> ${window.escapeHtml(application.first_name)} ${window.escapeHtml(application.last_name)}</div>
+              <div><strong>Email:</strong> ${window.escapeHtml(application.email)}</div>
+              <div><strong>Phone:</strong> ${window.escapeHtml(application.phone)}</div>
               <div><strong>Date of Birth:</strong> ${new Date(application.date_of_birth).toLocaleDateString('en-GB')}</div>
-              <div><strong>Nationality:</strong> ${application.nationality}</div>
-              <div><strong>Address:</strong> ${application.address}</div>
+              <div><strong>Nationality:</strong> ${window.escapeHtml(application.nationality)}</div>
+              <div><strong>Address:</strong> ${window.escapeHtml(application.address)}</div>
             </div>
           </div>
 
           ${application.additional_info ? `
             <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
               <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Additional Information</h4>
-              <p style="font-size:0.9rem;color:#374151;line-height:1.6;">${application.additional_info}</p>
+              <p style="font-size:0.9rem;color:#374151;line-height:1.6;">${window.escapeHtml(application.additional_info)}</p>
             </div>
           ` : ''}
 
@@ -1266,16 +1341,16 @@ window.viewApplication = async function(applicationId) {
         <div>
           <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-bottom:16px;">
             <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Update Status</h4>
-            <select id="statusUpdate" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:12px;">
+            <select id="statusUpdate" onchange="toggleRejectionReason()" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:12px;">
               <option value="submitted" ${application.status === 'submitted' ? 'selected' : ''}>Submitted</option>
               <option value="in_review" ${application.status === 'in_review' ? 'selected' : ''}>In Review</option>
               <option value="processing" ${application.status === 'processing' ? 'selected' : ''}>Processing</option>
               <option value="approved" ${application.status === 'approved' ? 'selected' : ''}>Approved</option>
               <option value="rejected" ${application.status === 'rejected' ? 'selected' : ''}>Rejected</option>
             </select>
-            ${application.status === 'rejected' ? `
+            <div id="rejectionReasonWrap" style="${application.status === 'rejected' ? 'display:block;' : 'display:none;'}">
               <input type="text" id="rejectionReason" placeholder="Rejection reason" style="width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:12px;" value="${application.rejection_reason || ''}">
-            ` : ''}
+            </div>
             <button onclick="updateApplicationStatus('${application.id}')" class="admin-btn admin-btn-primary" style="width:100%;">
               <i class="fas fa-save"></i> Update Status
             </button>
@@ -1299,7 +1374,7 @@ window.viewApplication = async function(applicationId) {
                       <div style="font-size:0.82rem;color:#6B7280;margin-bottom:4px;">
                         ${note.admin_name || 'Admin'} · ${new Date(note.created_at).toLocaleDateString('en-GB')}
                       </div>
-                      <div style="font-size:0.9rem;color:#374151;">${note.note}</div>
+                      <div style="font-size:0.9rem;color:#374151;">${window.escapeHtml(note.note)}</div>
                     </div>
                     <button onclick="deleteAdminNote('${note.id}')" style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:0.85rem;padding:2px;flex-shrink:0;" title="Delete note">
                       <i class="fas fa-times"></i>
@@ -1311,7 +1386,7 @@ window.viewApplication = async function(applicationId) {
           ` : ''}
 
           <div style="margin-top:16px;">
-            <button onclick="openEmailModal({recipientId:'${application.id}',recipientType:'application',email:'${application.email}',name:'${application.first_name} ${application.last_name}'})" class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;">
+            <button onclick='openEmailModal({recipientId:"${application.id}",recipientType:"application",email:"${window.escapeHtml(application.email)}",name:"${window.escapeHtml(application.first_name)} ${window.escapeHtml(application.last_name)}"})' class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Email Applicant
             </button>
             <button onclick="copyPaymentMail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Copy payment invoice text to clipboard">
@@ -1332,7 +1407,10 @@ window.viewApplication = async function(applicationId) {
 };
 
 window.deleteApplication = async function(applicationId) {
-  if (!confirm('Permanently delete this application and all its documents & notes? This cannot be undone.')) return;
+  if (!confirm('Delete this application and all its documents & notes?')) return;
+
+  const toast = window.showToast('Deleting application...', 'default', 6000);
+
   try {
     const { data: notesData, error: notesErr } = await db.from('application_notes').delete().eq('application_id', applicationId).select();
     if (notesErr) throw notesErr;
@@ -1342,12 +1420,21 @@ window.deleteApplication = async function(applicationId) {
     if (appErr) throw appErr;
     if (!appData || appData.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
     _logAudit('application_deleted', { application_id: applicationId });
-    alert('Application deleted');
+    toast.undo('Undo', async () => {
+      try {
+        if (appData?.[0]) await db.from('applications').insert(appData[0]);
+        if (notesData?.length) await db.from('application_notes').insert(notesData);
+        if (docsData?.length) await db.from('application_documents').insert(docsData);
+        window.showToast('Application restored', 'success', 3000);
+      } catch {
+        window.showToast('Could not restore — data may have been cleaned up', 'error', 4000);
+      }
+    });
     loadApplications();
     showPage('applications');
   } catch (e) {
     console.error('Delete application error:', e);
-    alert('Error deleting application: ' + e.message);
+    window.showToast('Error deleting: ' + e.message, 'error', 4000);
   }
 };
 
@@ -1572,24 +1659,31 @@ window.addAdminNote = async function(applicationId) {
   }
 };
 
+window._currentApplicationId = null;
+
 window.deleteAdminNote = async function(noteId) {
   if (!confirm('Delete this note?')) return;
+
   try {
     const { data, error } = await db.from('application_notes').delete().eq('id', noteId).select();
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('Delete failed — admin RLS permission missing. Run the updated schema.');
-    // Refresh the current application view
-    const detailEl = document.getElementById('applicationDetail');
-    if (detailEl) {
-      const appId = detailEl.querySelector('[onclick*="deleteApplication"]');
-      if (appId) {
-        const match = appId.getAttribute('onclick').match(/'([^']+)'/);
-        if (match) viewApplication(match[1]);
+
+    const toast = window.showToast('Note deleted', 'success', 6000);
+    toast.undo('Undo', async () => {
+      try {
+        if (data?.[0]) await db.from('application_notes').insert(data[0]);
+      } catch {
+        window.showToast('Could not restore note', 'error', 4000);
       }
+    });
+
+    if (window._currentApplicationId) {
+      viewApplication(window._currentApplicationId);
     }
   } catch (e) {
     console.error('Delete note error:', e);
-    alert('Error deleting note: ' + e.message);
+    window.showToast('Error deleting note: ' + e.message, 'error', 4000);
   }
 };
 
@@ -1599,7 +1693,10 @@ window.showPage = function(page) {
   document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${page}`)?.classList.add('active');
   
-  const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details' };
+  if (page === 'audit-log' && !document.getElementById('auditLogList').querySelector('.admin-audit-item')) {
+    loadAuditLog();
+  }
+  const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details', 'audit-log': 'Audit Log' };
   document.getElementById('topbarTitle').textContent = titles[page] || 'Dashboard';
 };
 
@@ -1657,7 +1754,17 @@ async function loadDashboardStats() {
       .eq('status', 'pending');
 
     document.getElementById('statHandoffs').textContent  = queueCount || 0;
-    document.getElementById('statResolved').textContent  = '—';
+
+    // Count applications approved today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count: resolvedCount } = await db
+      .from('applications')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
+      .gte('updated_at', todayStart.toISOString());
+
+    document.getElementById('statResolved').textContent  = resolvedCount || 0;
 
     // Count only admin messages (human conversations)
     const { count: msgCount } = await db
@@ -1680,10 +1787,10 @@ async function loadDashboardStats() {
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.82rem;font-weight:700;color:#1A1A2E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-            ${s.visitor_name || s.id}
+            ${window.escapeHtml(s.visitor_name || s.id)}
           </div>
           <div style="font-size:0.75rem;color:#6B7280;">
-            ${(s.last_message || 'No messages').slice(0, 50)} · ${s.page || '/'}
+            ${window.escapeHtml((s.last_message || 'No messages').slice(0, 50))} · ${window.escapeHtml(s.page || '/')}
           </div>
         </div>
         ${s.is_admin_mode
@@ -1776,8 +1883,8 @@ window.loadSessions = async function() {
       div.innerHTML = `
         <div class="session-avatar">${s.visitor_name ? s.visitor_name.charAt(0).toUpperCase() : '<i class="fas fa-user"></i>'}</div>
         <div class="session-info">
-          <div class="session-id">${displayName}</div>
-        <div class="session-preview">${(s.last_message || 'No messages').slice(0, 38)}</div>
+          <div class="session-id">${window.escapeHtml(displayName)}</div>
+        <div class="session-preview">${window.escapeHtml((s.last_message || 'No messages').slice(0, 38))}</div>
       </div>
       ${hasUnread ? `<div class="session-unread">${s.unread}</div>` : ''}
       ${s.is_admin_mode ? '<span class="session-badge admin-active">Live</span>' : '<span class="session-badge">Requested</span>'}
@@ -1795,7 +1902,8 @@ window.loadSessions = async function() {
    OPEN SESSION
 ════════════════════════════════════════ */
 window.deleteSession = async function(sessionId) {
-  if (!confirm('Delete this chat session and all its messages? This cannot be undone.')) return;
+  if (!confirm('Delete this chat session and all its messages?')) return;
+
   try {
     await db.from('chat_messages').delete().eq('session_id', sessionId).select();
     await db.from('admin_replies').delete().eq('session_id', sessionId).select();
@@ -1804,7 +1912,15 @@ window.deleteSession = async function(sessionId) {
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('Delete failed — admin permission missing. Run the updated schema.');
     _logAudit('chat_session_deleted', { session_id: sessionId });
-    alert('Chat session deleted');
+    const toast = window.showToast('Chat session deleted', 'success', 6000);
+    toast.undo('Undo', async () => {
+      try {
+        if (data?.[0]) await db.from('chat_sessions').insert(data[0]);
+        window.showToast('Session restored', 'success', 3000);
+      } catch {
+        window.showToast('Could not restore session', 'error', 4000);
+      }
+    });
     currentSess = null;
     loadSessions();
     loadDashboardStats();
@@ -1817,7 +1933,7 @@ window.deleteSession = async function(sessionId) {
     `;
   } catch (e) {
     console.error('Delete session error:', e);
-    alert('Error deleting session: ' + e.message);
+    window.showToast('Error deleting session: ' + e.message, 'error', 4000);
   }
 };
 
@@ -1835,7 +1951,7 @@ async function openSession(sessionId) {
     .eq('id', sessionId)
     .single();
 
-  const displayName = session?.visitor_name || sessionId;
+  const displayName = window.escapeHtml(session?.visitor_name || sessionId);
   const statusText = session?.is_admin_mode ? 'Live chat' : 'Waiting for agent';
 
   const panel = document.getElementById('chatViewPanel');
@@ -1843,7 +1959,7 @@ async function openSession(sessionId) {
     <div class="chat-view-header">
       <div>
         <div class="chat-view-session-id">${displayName}</div>
-        <div class="chat-view-meta">${statusText} · ${session?.page || '/'}</div>
+        <div class="chat-view-meta">${window.escapeHtml(statusText)} · ${window.escapeHtml(session?.page || '/')}</div>
       </div>
       <div style="display:flex;gap:6px;">
         <button class="admin-btn admin-btn-small admin-btn-success" id="takeOverBtn">
@@ -1860,7 +1976,7 @@ async function openSession(sessionId) {
     </div>
     <div class="chat-view-footer" id="adminReplyArea" style="display:none;">
       <textarea class="admin-reply-input" id="adminReplyInput"
-        placeholder="Type your reply to ${displayName}..." rows="2"></textarea>
+        placeholder="Type your reply..." rows="2"></textarea>
       <button class="admin-reply-send" id="adminReplySend">
         <i class="fas fa-paper-plane"></i> Send
       </button>
@@ -1989,7 +2105,7 @@ function appendMessage(msg, scroll = true) {
   div.innerHTML = `
     <div class="admin-msg-avatar">${avatars[msg.sender] || '?'}</div>
     <div>
-      <div class="admin-msg-bubble">${msg.text}</div>
+      <div class="admin-msg-bubble">${window.escapeHtml(msg.text)}</div>
       <div class="admin-msg-time">${time}</div>
     </div>
   `;
@@ -2099,11 +2215,43 @@ async function sendReply() {
     EMAIL COMPOSE MODAL
 ════════════════════════════════════════ */
 
+let _lastFocusedEl = null;
+
+function _focusTrap(e) {
+  const overlay = document.getElementById('emailModalOverlay');
+  if (overlay.style.display !== 'flex') return;
+
+  const focusable = overlay.querySelectorAll(
+    'input, textarea, select, button, [tabindex]:not([tabindex="-1"])'
+  );
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+
+  if (e.key === 'Tab') {
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeEmailModal();
+  _focusTrap(e);
 });
 
 window.openEmailModal = function({ recipientId, recipientType, email, name, subject = '' }) {
+  _lastFocusedEl = document.activeElement;
+
   document.getElementById('emailRecipientId').value = recipientId || '';
   document.getElementById('emailRecipientType').value = recipientType || '';
   document.getElementById('emailTo').value = email || '';
@@ -2116,10 +2264,17 @@ window.openEmailModal = function({ recipientId, recipientType, email, name, subj
   document.getElementById('emailModalTitle').textContent = `Compose Email to ${typeLabels[recipientType] || 'Recipient'}`;
 
   document.getElementById('emailModalOverlay').style.display = 'flex';
+
+  const firstField = document.getElementById('emailSubject');
+  if (firstField) setTimeout(() => firstField.focus(), 100);
 };
 
 window.closeEmailModal = function() {
   document.getElementById('emailModalOverlay').style.display = 'none';
+  if (_lastFocusedEl && typeof _lastFocusedEl.focus === 'function') {
+    _lastFocusedEl.focus();
+  }
+  _lastFocusedEl = null;
 };
 
 window.sendComposeEmail = async function() {
@@ -2415,3 +2570,119 @@ function listenForHandoffs() {
     console.log('[Admin] Realtime subscription status:', status);
   });
 }
+
+/* ════════════════════════════════════════
+   AUDIT LOG
+════════════════════════════════════════ */
+let _allAuditEntries = [];
+let _auditPage = 0;
+const _auditPageSize = 30;
+
+window.loadAuditLog = async function() {
+  _auditPage = 0;
+  const list = document.getElementById('auditLogList');
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:0.85rem;">Loading audit log...</div>';
+
+  try {
+    const { data: entries, error } = await db
+      .from('audit_log')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    _allAuditEntries = entries || [];
+    _renderAuditPage();
+
+  } catch (e) {
+    console.error('Audit log error:', e);
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#EF4444;"><i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:12px;"></i><p>Error loading audit log</p></div>';
+  }
+};
+
+function _renderAuditPage() {
+  const list = document.getElementById('auditLogList');
+  const filtered = _getFilteredAudit();
+  const start = 0;
+  const end = (_auditPage + 1) * _auditPageSize;
+  const page = filtered.slice(start, end);
+  const countEl = document.getElementById('auditCount');
+  countEl.textContent = `${filtered.length} entr${filtered.length !== 1 ? 'ies' : 'y'}`;
+
+  if (page.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#9CA3AF;"><i class="fas fa-history" style="font-size:2rem;margin-bottom:12px;"></i><p>No audit entries match your filters</p></div>';
+    document.getElementById('auditLoadMoreWrap').style.display = 'none';
+    return;
+  }
+
+  const _actionLabels = {
+    'login': 'Login',
+    'application_status_change': 'Status Change',
+    'application_deleted': 'App Deleted',
+    'payment_mail_copied': 'Payment Mail',
+    'email_sent': 'Email Sent',
+    'enquiry_status_change': 'Enquiry Status',
+    'enquiry_deleted': 'Enquiry Deleted',
+    'chat_session_deleted': 'Chat Deleted',
+    'user_deleted': 'User Deleted'
+  };
+
+  const _actionColors = {
+    'login': '#3B82F6',
+    'application_status_change': '#8B5CF6',
+    'application_deleted': '#EF4444',
+    'payment_mail_copied': '#F59E0B',
+    'email_sent': '#2E9F6E',
+    'enquiry_status_change': '#6366F1',
+    'enquiry_deleted': '#EF4444',
+    'chat_session_deleted': '#EF4444',
+    'user_deleted': '#DC2626'
+  };
+
+  list.innerHTML = page.map(entry => {
+    const label = _actionLabels[entry.action] || entry.action;
+    const color = _actionColors[entry.action] || '#6B7280';
+    const details = typeof entry.details === 'object' ? entry.details : {};
+    const detailStr = details ? Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
+    return `
+      <div class="admin-audit-item" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:${color}15;color:${color};display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">
+          <i class="fas ${entry.action === 'login' ? 'fa-sign-in-alt' : entry.action.includes('deleted') ? 'fa-trash' : entry.action === 'email_sent' ? 'fa-paper-plane' : entry.action === 'payment_mail_copied' ? 'fa-copy' : entry.action === 'application_status_change' || entry.action === 'enquiry_status_change' ? 'fa-exchange-alt' : 'fa-circle'}"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.85rem;font-weight:700;color:#1A1A2E;margin-bottom:2px;">
+            ${label}
+          </div>
+          <div style="font-size:0.78rem;color:#6B7280;">
+            ${window.escapeHtml(entry.admin_email || 'unknown')} ${detailStr ? '· ' + window.escapeHtml(detailStr) : ''}
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:#9CA3AF;white-space:nowrap;flex-shrink:0;">
+          ${new Date(entry.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('auditLoadMoreWrap').style.display = end >= filtered.length ? 'none' : 'block';
+}
+
+function _getFilteredAudit() {
+  const search = (document.getElementById('auditSearch').value || '').toLowerCase().trim();
+  const action = document.getElementById('auditActionFilter').value;
+  return _allAuditEntries.filter(e => {
+    if (search && !`${e.action} ${e.admin_email || ''} ${JSON.stringify(e.details || '')}`.toLowerCase().includes(search)) return false;
+    if (action && e.action !== action) return false;
+    return true;
+  });
+}
+
+window.filterAuditLog = function() {
+  _auditPage = 0;
+  _renderAuditPage();
+};
+
+window.loadMoreAuditLog = function() {
+  _auditPage++;
+  _renderAuditPage();
+};
