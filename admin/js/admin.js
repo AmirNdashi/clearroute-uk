@@ -41,7 +41,7 @@ if (window._supabase) {
 function initAuth() {
   // Check existing session
   db.auth.getSession().then(async ({ data }) => {
-    if (data.session) {
+    if (data?.session) {
       if (await enforceAdminAccess(data.session.user)) {
         showDashboard(data.session.user);
       }
@@ -132,15 +132,17 @@ async function ensureAdminProfile(user) {
 document.getElementById('authBtn').addEventListener('click', async () => {
   if (!db) {
     const errEl = document.getElementById('authError');
-    errEl.textContent = 'Database not initialized. Please wait a moment and try again.';
-    errEl.style.display = 'block';
+    if (errEl) {
+      errEl.textContent = 'Database not initialized. Please wait a moment and try again.';
+      errEl.style.display = 'block';
+    }
     return;
   }
 
   const email    = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const errEl    = document.getElementById('authError');
-  errEl.style.display = 'none';
+  if (errEl) errEl.style.display = 'none';
 
   if (!email || !password) {
     errEl.textContent = 'Please enter your email and password.';
@@ -1065,17 +1067,21 @@ window.toggleRejectionReason = function() {
 };
 
 function _renderAppCard(app) {
+  const escapedService = window.escapeHtml(_serviceNames[app.service_type] || app.service_type);
+  const escapedName = window.escapeHtml(`${app.first_name} ${app.last_name}`);
+  const escapedEmail = window.escapeHtml(app.email || '');
+  const escapedId = window.escapeHtml(app.id);
   return `
-    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewApplication('${app.id}')">
+    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F9FAFB;border-radius:8px;margin-bottom:12px;cursor:pointer;transition:all 0.2s ease;" onclick="viewApplication('${escapedId}')">
       <div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0D4F4F,#1A6B6B);color:#D4735E;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
         <i class="fas fa-file-alt"></i>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.95rem;font-weight:700;color:#1A1A2E;margin-bottom:4px;">
-          ${_serviceNames[app.service_type] || app.service_type}
+          ${escapedService}
         </div>
         <div style="font-size:0.82rem;color:#6B7280;">
-          ${app.first_name} ${app.last_name} · ${app.email}
+          ${escapedName} · ${escapedEmail}
         </div>
       </div>
       <div style="text-align:right;">
@@ -1507,9 +1513,9 @@ ${pricingInfo?.packageName ? `Package: ${pricingInfo.packageName}` : ''}
 
 PAYMENT SUMMARY:
 ${pricingInfo ? `
-Total Cost: £${pricingInfo.totalCost}
-Upfront Payment Due: £${pricingInfo.upfrontPayment}
-Remaining Balance: £${pricingInfo.remainingBalance}` : 'Contact us for pricing details'}
+Total Cost: £${pricingInfo.totalCost || pricingInfo.total_cost || 0}
+Upfront Payment Due: £${pricingInfo.upfrontPayment || pricingInfo.upfront_payment || 0}
+Remaining Balance: £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0}` : 'Contact us for pricing details'}
 
 ═══════════════════════════════════════════════════════════════
 CLIENT INFORMATION
@@ -1544,7 +1550,7 @@ IMPORTANT PAYMENT NOTES
 ═══════════════════════════════════════════════════════════════
 
 • Please include Application ID (${app.id}) as your payment reference
-${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance} is due upon completion of key milestones` : ''}
+${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0} is due upon completion of key milestones` : ''}
 • Work commences within 24 hours of payment confirmation
 • Please send payment confirmation to info@clearrouteuk.co.uk
 
@@ -1571,7 +1577,9 @@ Registered in England & Wales
 
 async function _logAudit(action, details) {
   try {
-    const { data: { user } } = await db.auth.getUser();
+    if (!db) return;
+    const authRes = await db.auth.getUser();
+    const user = authRes?.data?.user;
     await db.from('audit_log').insert({
       action,
       details,
@@ -1632,7 +1640,8 @@ window.addAdminNote = async function(applicationId) {
   }
 
   try {
-    const { data: { user } } = await db.auth.getUser();
+    const authRes = await db.auth.getUser();
+    const user = authRes?.data?.user;
 
     const { data, error } = await db
       .from('application_notes')
@@ -1696,7 +1705,7 @@ window.showPage = function(page) {
   if (page === 'audit-log' && !document.getElementById('auditLogList').querySelector('.admin-audit-item')) {
     loadAuditLog();
   }
-  const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details', 'audit-log': 'Audit Log' };
+  const titles = { dashboard: 'Dashboard', chat: 'Live Chat Inbox', applications: 'User Applications', 'application-detail': 'Application Details', enquiries: 'Enquiries', 'enquiry-detail': 'Enquiry Details', users: 'Users', 'user-detail': 'User Details', 'audit-log': 'Audit Log', 'email-inbox': 'Email Inbox', 'email-detail': 'Email Details' };
   document.getElementById('topbarTitle').textContent = titles[page] || 'Dashboard';
 };
 
@@ -1810,7 +1819,8 @@ async function loadDashboardStats() {
 }
 
 window.goToSession = function(id) {
-  document.querySelector('[data-page="chat"]').click();
+  const chatPage = document.querySelector('[data-page="chat"]');
+  if (chatPage) chatPage.click();
   setTimeout(() => openSession(id), 100);
 };
 
@@ -2116,11 +2126,15 @@ function appendMessage(msg, scroll = true) {
 /* ════════════════════════════════════════
    REFRESH ACTIVE CONVO (typing indicators)
 ════════════════════════════════════════ */
+let _typingInterval = null;
+
 function refreshActiveConvo() {
   if (!currentSess) return;
 
+  if (_typingInterval) clearInterval(_typingInterval);
+
   // Update typing indicator periodically
-  setInterval(async () => {
+  _typingInterval = setInterval(async () => {
     if (!currentSess) return;
 
     const { data: session } = await db
@@ -2362,7 +2376,8 @@ Thank you for your business.`;
 window.loadSettings = async function() {
   try {
     // Load admin profile
-    const { data: { user } } = await db.auth.getUser();
+    const authRes = await db.auth.getUser();
+    const user = authRes?.data?.user;
     if (user) {
       const { data: profile } = await db
         .from('profiles')
@@ -2397,7 +2412,8 @@ window.loadSettings = async function() {
 
 window.saveProfileSettings = async function() {
   try {
-    const { data: { user } } = await db.auth.getUser();
+    const authRes = await db.auth.getUser();
+    const user = authRes?.data?.user;
     if (!user) {
       alert('No authenticated user found');
       return;
@@ -2527,7 +2543,7 @@ function listenForHandoffs() {
       { event: 'INSERT', schema: 'public', table: 'admin_queue' },
       async (payload) => {
         const badge = document.getElementById('sidebarChatBadge');
-        badge.style.display = 'flex';
+        if (badge) badge.style.display = 'flex';
 
         // Get session info for notification
         const { data: session } = await db
@@ -2541,7 +2557,7 @@ function listenForHandoffs() {
           showNotifyToast(`New chat from ${session.visitor_name || 'a visitor'}!`);
         }
 
-        prevSessionIds.add(session.id);
+        if (session) prevSessionIds.add(session.id);
 
         // Flash the sessions list
         loadSessions();
@@ -2558,7 +2574,7 @@ function listenForHandoffs() {
             playNotificationSound();
             showNotifyToast(`New chat from ${s.visitor_name || 'a visitor'}!`);
           }
-          prevSessionIds.add(s.id);
+          if (s) prevSessionIds.add(s.id);
           loadSessions();
           loadDashboardStats();
         }
@@ -2621,6 +2637,8 @@ function _renderAuditPage() {
     'application_deleted': 'App Deleted',
     'payment_mail_copied': 'Payment Mail',
     'email_sent': 'Email Sent',
+    'email_status_change': 'Email Status',
+    'email_deleted': 'Email Deleted',
     'enquiry_status_change': 'Enquiry Status',
     'enquiry_deleted': 'Enquiry Deleted',
     'chat_session_deleted': 'Chat Deleted',
@@ -2633,6 +2651,8 @@ function _renderAuditPage() {
     'application_deleted': '#EF4444',
     'payment_mail_copied': '#F59E0B',
     'email_sent': '#2E9F6E',
+    'email_status_change': '#06B6D4',
+    'email_deleted': '#EF4444',
     'enquiry_status_change': '#6366F1',
     'enquiry_deleted': '#EF4444',
     'chat_session_deleted': '#EF4444',
@@ -2642,8 +2662,8 @@ function _renderAuditPage() {
   list.innerHTML = page.map(entry => {
     const label = _actionLabels[entry.action] || entry.action;
     const color = _actionColors[entry.action] || '#6B7280';
-    const details = typeof entry.details === 'object' ? entry.details : {};
-    const detailStr = details ? Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
+    const details = entry.details && typeof entry.details === 'object' ? entry.details : {};
+    const detailStr = Object.keys(details).length ? Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(' · ') : '';
     return `
       <div class="admin-audit-item" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">
         <div style="width:36px;height:36px;border-radius:50%;background:${color}15;color:${color};display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">

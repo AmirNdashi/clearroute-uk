@@ -2,17 +2,11 @@
    CLEARROUTE UK — CONTACT FORM (EmailJS)
    ============================================================ */
 
-// ----- REPLACE THESE WITH YOUR EMAILJS CREDENTIALS -----
-const EMAILJS_SERVICE_ID  = 'service_1ni6j9l';
-const EMAILJS_TEMPLATE_ID = 'template_e5652u2';
-const EMAILJS_PUBLIC_KEY  = 'QR-TTFj2f6_BZOxKX';
-// --------------------------------------------------------
-
-// Load EmailJS SDK
+// Load EmailJS SDK — uses shared config from email-service.js
 (function () {
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
-  script.onload = () => emailjs.init(EMAILJS_PUBLIC_KEY);
+  script.onload = () => emailjs.init('QR-TTFj2f6_BZOxKX');
   document.head.appendChild(script);
 })();
 
@@ -92,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const serviceLabels = {
       'driving-licence-conversion': 'Driving Licence Conversion',
+      'pco-licence':                'PCO Licence Application Support',
       'theory-test-booking':        'Theory Test Booking & Study Support',
       'practical-test-booking':     'Practical Test Booking Assistance',
       'ni-number-application':      'NI Number Application Support',
@@ -101,20 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
       'multiple':                   'Multiple Services / Not Sure Yet',
     };
 
-    const templateParams = {
-      from_name:    `${firstName.trim()} ${lastName.trim()}`,
-      from_email:   email.trim(),
-      phone:        phone.trim() || 'Not provided',
-      nationality:  nationality.trim(),
-      service:      serviceLabels[service] || service,
-      message:      message.trim(),
-      to_name:      'ClearRoute UK Team',
-      reply_to:     email.trim(),
-    };
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    const serviceLabel = serviceLabels[service] || service;
 
     try {
-      // Send via EmailJS
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+      // Send via EmailJS — reuses existing ADMIN_COMPOSE template
+      await emailjs.send('service_1ni6j9l', 'template_f8ef8le', {
+        to_email:  'info@clearrouteuk.co.uk',
+        to_name:   'ClearRoute UK Team',
+        from_name: fullName,
+        subject:   `New Enquiry from ${fullName} — ${serviceLabel}`,
+        message:   `Phone: ${phone.trim() || 'Not provided'}\nNationality: ${nationality.trim()}\nService: ${serviceLabel}\n\nMessage:\n${message.trim()}`,
+        reply_to:  email.trim(),
+      });
 
       // Also save to Supabase for admin panel
       if (window._supabase) {
@@ -127,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
               email: email.trim(),
               phone: phone.trim() || null,
               nationality: nationality.trim(),
-              service: serviceLabels[service] || service,
+              service: serviceLabel,
               message: message.trim(),
               status: 'new',
               created_at: new Date().toISOString()
