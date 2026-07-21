@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearRoute UK Blog — UK Documentation Guides & Resources</title>
+  <meta name="description" content="Expert guides on UK driving licence conversion, PCO licence applications, NI numbers, BRP/eVisa, and more. ClearRoute UK helps international clients navigate UK documentation." />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://www.clearrouteuk.co.uk/blog/" />
+  <meta property="og:title"       content="ClearRoute UK Blog — UK Documentation Guides & Resources" />
+  <meta property="og:description" content="Expert guides on UK driving licence conversion, PCO licence applications, NI numbers, BRP/eVisa, and more. ClearRoute UK helps international clients navigate UK documentation." />
+  <meta property="og:image"       content="../assets/images/og-image.jpg" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="ClearRoute UK Blog — UK Documentation Guides & Resources" />
+  <meta name="twitter:description" content="Expert guides on UK driving licence conversion, PCO licence applications, NI numbers, BRP/eVisa, and more. ClearRoute UK helps international clients navigate UK documentation." />
+  <meta name="twitter:image"       content="../assets/images/og-image.jpg" />
+
+  <link rel="canonical" href="https://www.clearrouteuk.co.uk/blog/" />
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../assets/css/styles.min.css" />
+
+  <!-- BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.clearrouteuk.co.uk/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.clearrouteuk.co.uk/blog/" }
+    ]
+  }
+  </script>
+
+  <!-- CollectionPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "ClearRoute UK Blog",
+    "description": "Expert guides on UK driving licence conversion, PCO licence applications, NI numbers, BRP/eVisa, and more.",
+    "url": "https://www.clearrouteuk.co.uk/blog/",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "url": "https://www.clearrouteuk.co.uk/blog/driving-licence-conversion-guide.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "url": "https://www.clearrouteuk.co.uk/blog/pco-licence-guide.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "url": "https://www.clearrouteuk.co.uk/blog/ni-number-guide.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "url": "https://www.clearrouteuk.co.uk/blog/uk-theory-test-guide.html"
+        }
+      ]
+    }
+  }
+  </script>
+
+  <style>
+    .page-hero {
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+      padding: 160px 0 90px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 80% 30%, rgba(212,115,94,0.07) 0%, transparent 50%), radial-gradient(circle at 10% 70%, rgba(212,115,94,0.04) 0%, transparent 40%);
+    }
+    .page-hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+    }
+    .page-hero h1 {
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+    .page-hero p {
+      color: rgba(255,255,255,0.62);
+      font-size: 1.12rem;
+      max-width: 520px;
+    }
+    .blog-index-section {
+      padding: 90px 0 100px;
+      background: var(--bg-light);
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+    .blog-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .blog-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--copper);
+    }
+    .blog-card-img {
+      height: 200px;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(212,115,94,0.3);
+      font-size: 3rem;
+    }
+    .blog-card-body {
+      padding: 28px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .blog-card-date {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .blog-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+    .blog-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .blog-card .read-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--copper);
+      transition: var(--transition);
+    }
+    .blog-card .read-more:hover {
+      gap: 12px;
+      color: var(--copper-dark);
+    }
+    @media (max-width: 768px) {
+      .blog-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-transition active"></div>
+
+  <nav class="navbar" role="navigation">
+    <div class="container">
+      <div class="navbar-inner">
+        <a href="../index.html" class="navbar-brand">ClearRoute UK</a>
+        <ul class="navbar-nav">
+          <li><a href="../index.html">Home</a></li>
+          <li><a href="../services.html">Services</a></li>
+          <li><a href="../how-it-works.html">How It Works</a></li>
+          <li><a href="../about.html">About</a></li>
+          <li><a href="../faq.html">FAQ</a></li>
+          <li><a href="index.html">Blog</a></li>
+          <li><a href="../dashboard.html">Contact</a></li>
+        </ul>
+        <div class="navbar-cta">
+          <a href="../dashboard.html" class="btn btn-primary"><i class="fas fa-rocket"></i> Get Started</a>
+        </div>
+        <button class="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-nav">
+    <div class="mobile-nav-header"></div>
+    <a href="../index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="../services.html"><i class="fas fa-briefcase"></i> Services</a>
+    <a href="../how-it-works.html"><i class="fas fa-route"></i> How It Works</a>
+    <a href="../about.html"><i class="fas fa-users"></i> About Us</a>
+    <a href="../faq.html"><i class="fas fa-question-circle"></i> FAQ</a>
+    <a href="../dashboard.html"><i class="fas fa-envelope"></i> Contact</a>
+    <a href="../dashboard.html" class="btn btn-primary mt-24" style="justify-content:center;"><i class="fas fa-rocket"></i> Get Started</a>
+    <div class="mobile-nav-contact">
+      <a href="mailto:info@clearrouteuk.co.uk"><i class="fas fa-envelope"></i> info@clearrouteuk.co.uk</a>
+      <a href="https://wa.me/447983312575?text=Hello%20there%2C%20I%20would%20like%20to%20enquire%20about%20your%20services." target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="page-hero">
+      <div class="container">
+        <div class="page-hero-content">
+          <div class="service-detail-breadcrumb" style="margin-bottom:20px;">
+            <a href="../index.html" style="color:rgba(255,255,255,0.5);">Home</a>
+            <span class="sep" style="color:rgba(255,255,255,0.3);">›</span>
+            <span class="curr" style="color:var(--copper-light);">Blog</span>
+          </div>
+          <h1>ClearRoute UK Blog</h1>
+          <p>Expert guides, tips, and step-by-step resources to help international clients navigate UK documentation — from driving licence conversion to NI numbers and beyond.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOG POSTS -->
+    <section class="blog-index-section">
+      <div class="container">
+        <div class="blog-grid">
+
+          <!-- Post 1 -->
+          <article class="blog-card">
+            <div class="blog-card-img">
+              <i class="fas fa-id-card"></i>
+            </div>
+            <div class="blog-card-body">
+              <div class="blog-card-date">July 21, 2026</div>
+              <h3>How to Convert Your Foreign Driving Licence in the UK — Complete Guide</h3>
+              <p>Step-by-step guide to converting your foreign driving licence to a full UK DVLA licence. Covers eligibility, required documents, costs, and expert tips.</p>
+              <a href="driving-licence-conversion-guide.html" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </article>
+
+          <!-- Post 2 -->
+          <article class="blog-card">
+            <div class="blog-card-img">
+              <i class="fas fa-taxi"></i>
+            </div>
+            <div class="blog-card-body">
+              <div class="blog-card-date">July 21, 2026</div>
+              <h3>PCO Licence Application: Complete Step-by-Step Guide for 2026</h3>
+              <p>Everything you need to know about getting your PCO licence in London. Requirements, medical, DBS, topographical test, and application process explained.</p>
+              <a href="pco-licence-guide.html" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </article>
+
+          <!-- Post 3 -->
+          <article class="blog-card">
+            <div class="blog-card-img">
+              <i class="fas fa-hashtag"></i>
+            </div>
+            <div class="blog-card-body">
+              <div class="blog-card-date">July 21, 2026</div>
+              <h3>How to Get a National Insurance Number as a Foreign National in the UK</h3>
+              <p>Complete guide to applying for a National Insurance number as a non-UK resident. Eligibility, documents required, application process, and expert support.</p>
+              <a href="ni-number-guide.html" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </article>
+
+          <!-- Post 4 -->
+          <article class="blog-card">
+            <div class="blog-card-img">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <div class="blog-card-body">
+              <div class="blog-card-date">July 21, 2026</div>
+              <h3>UK Theory Test: Complete Guide to Booking, Preparing, and Passing</h3>
+              <p>Everything you need to know about the UK driving theory test — booking process, study materials, what to expect on test day, and tips to pass first time.</p>
+              <a href="uk-theory-test-guide.html" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; <span id="footer-year"></span> ClearRoute UK. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="../terms.html">Terms of Service</a>
+          <a href="../privacy.html">Privacy Policy</a>
+          <a href="../dashboard.html">Contact</a>
+        </div>
+      </div>
+      <div class="footer-disclaimer">
+        <i class="fas fa-info-circle"></i>
+        <p>ClearRoute UK provides consultancy and application support services only. We are not affiliated with the DVLA, DVSA, HMRC, Home Office, or HM Government. All applications are submitted through official UK government channels. Tests must be sat by the applicant in person.</p>
+      </div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
+  <div class="toast-container"></div>
+  <script type="module" src="../assets/js/firebase-config.js"></script>
+  <script defer src="../assets/js/main.js"></script>
+  <script defer src="../assets/js/chatbot.js"></script>
+</body>
+</html>
