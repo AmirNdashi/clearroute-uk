@@ -1391,6 +1391,44 @@ window.viewApplication = async function(applicationId) {
             </div>
           ` : ''}
 
+          <div style="background:#F9FAFB;border-radius:8px;padding:20px;margin-top:16px;">
+            <h4 style="color:#1A1A2E;font-size:1.1rem;margin-bottom:16px;">Payment Configuration</h4>
+            ${(() => {
+              const pc = pricingInfo?.paymentConfig || {};
+              return `
+              <div id="paymentConfigDisplay" style="font-size:0.85rem;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                  <div><strong>Bank:</strong> ${pc.bankName || 'ClearRoute UK'}</div>
+                  <div><strong>Account:</strong> ${pc.accountNumber || '—'}</div>
+                  <div><strong>Sort Code:</strong> ${pc.sortCode || '—'}</div>
+                  <div><strong>Ref:</strong> ${pc.paymentReference || application.id.slice(0, 8).toUpperCase()}</div>
+                </div>
+                <button onclick="togglePaymentConfig('${application.id}')" class="admin-btn admin-btn-small admin-btn-outline" style="width:100%;">
+                  <i class="fas fa-edit"></i> Edit Payment Details
+                </button>
+              </div>
+              <div id="paymentConfigForm" style="display:none;">
+                <input type="text" id="pcBankName" placeholder="Bank Name" value="${window.escapeHtml(pc.bankName || 'ClearRoute UK')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcAccountName" placeholder="Account Name" value="${window.escapeHtml(pc.accountName || 'ClearRoute UK')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcAccountNumber" placeholder="Account Number" value="${window.escapeHtml(pc.accountNumber || '')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcSortCode" placeholder="Sort Code" value="${window.escapeHtml(pc.sortCode || '')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcPaypalEmail" placeholder="PayPal Email" value="${window.escapeHtml(pc.paypalEmail || 'info@clearrouteuk.co.uk')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcWiseEmail" placeholder="Wise Email" value="${window.escapeHtml(pc.wiseEmail || 'info@clearrouteuk.co.uk')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcWhatsApp" placeholder="WhatsApp Number" value="${window.escapeHtml(pc.whatsApp || '+447983312575')}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:8px;font-size:0.85rem;">
+                <input type="text" id="pcReference" placeholder="Payment Reference" value="${window.escapeHtml(pc.paymentReference || application.id.slice(0, 8).toUpperCase())}" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:6px;margin-bottom:12px;font-size:0.85rem;">
+                <div style="display:flex;gap:8px;">
+                  <button onclick="savePaymentConfig('${application.id}')" class="admin-btn admin-btn-small admin-btn-success" style="flex:1;">
+                    <i class="fas fa-save"></i> Save
+                  </button>
+                  <button onclick="cancelPaymentConfig()" class="admin-btn admin-btn-small admin-btn-outline" style="flex:1;">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              `;
+            })()}
+          </div>
+
           <div style="margin-top:16px;">
             <button onclick='openEmailModal({recipientId:"${application.id}",recipientType:"application",email:"${window.escapeHtml(application.email)}",name:"${window.escapeHtml(application.first_name)} ${window.escapeHtml(application.last_name)}"})' class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;">
               <i class="fas fa-envelope"></i> Email Applicant
@@ -1444,19 +1482,59 @@ window.deleteApplication = async function(applicationId) {
   }
 };
 
+/* ── Payment Configuration ── */
+window.togglePaymentConfig = function(applicationId) {
+  document.getElementById('paymentConfigDisplay').style.display = 'none';
+  document.getElementById('paymentConfigForm').style.display = 'block';
+};
+
+window.cancelPaymentConfig = function() {
+  document.getElementById('paymentConfigDisplay').style.display = 'block';
+  document.getElementById('paymentConfigForm').style.display = 'none';
+};
+
+window.savePaymentConfig = async function(applicationId) {
+  const config = {
+    bankName: document.getElementById('pcBankName').value.trim(),
+    accountName: document.getElementById('pcAccountName').value.trim(),
+    accountNumber: document.getElementById('pcAccountNumber').value.trim(),
+    sortCode: document.getElementById('pcSortCode').value.trim(),
+    paypalEmail: document.getElementById('pcPaypalEmail').value.trim(),
+    wiseEmail: document.getElementById('pcWiseEmail').value.trim(),
+    whatsApp: document.getElementById('pcWhatsApp').value.trim(),
+    paymentReference: document.getElementById('pcReference').value.trim()
+  };
+
+  try {
+    const { data: app } = await db.from('applications').select('pricing_info').eq('id', applicationId).single();
+    const pricingInfo = app?.pricing_info || {};
+    pricingInfo.paymentConfig = config;
+
+    const { error } = await db.from('applications').update({ pricing_info: pricingInfo }).eq('id', applicationId);
+    if (error) throw error;
+
+    window.showToast('Payment configuration saved', 'success', 3000);
+    cancelPaymentConfig();
+    viewApplication(applicationId);
+  } catch (e) {
+    window.showToast('Error saving payment config: ' + (e.message || 'Unknown'), 'error', 4000);
+  }
+};
+
 window.copyPaymentMail = async function(applicationId) {
   try {
     const { data: app, error } = await db.from('applications').select('*').eq('id', applicationId).single();
     if (error) throw error;
 
     const pricingInfo = app.pricing_info && Object.keys(app.pricing_info).length > 0 ? app.pricing_info : null;
+    const pc = pricingInfo?.paymentConfig || {};
     const serviceName = _serviceNames[app.service_type] || app.service_type;
     const invoiceDate = new Date().toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
     });
-    const invoiceNumber = `INV-${app.id.slice(0, 8).toUpperCase()}`;
+    const invoiceNumber = `INV-${(pc.paymentReference || app.id).slice(0, 8).toUpperCase()}`;
 
     // Get document information
     const { data: documents } = await db.from('application_documents').select('*').eq('application_id', applicationId).single();
@@ -1535,21 +1613,21 @@ PAYMENT METHODS
 ═══════════════════════════════════════════════════════════════
 
 BANK TRANSFER (PREFERRED):
-Account Name: ClearRoute UK
-Account Number: [UPDATE WITH YOUR ACCOUNT NUMBER]
-Sort Code: [UPDATE WITH YOUR SORT CODE]
-Reference: ${app.id}
+Account Name: ${pc.accountName || 'ClearRoute UK'}
+Account Number: ${pc.accountNumber || '[UPDATE WITH YOUR ACCOUNT NUMBER]'}
+Sort Code: ${pc.sortCode || '[UPDATE WITH YOUR SORT CODE]'}
+Reference: ${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}
 
 ALTERNATIVE PAYMENT METHODS:
-• Wise Transfer: Send to info@clearrouteuk.co.uk
-• PayPal: Send to info@clearrouteuk.co.uk
-• WhatsApp: Contact us at +447983312575 for payment link
+• Wise Transfer: Send to ${pc.wiseEmail || 'info@clearrouteuk.co.uk'}
+• PayPal: Send to ${pc.paypalEmail || 'info@clearrouteuk.co.uk'}
+• WhatsApp: Contact us at ${pc.whatsApp || '+447983312575'} for payment link
 
 ═══════════════════════════════════════════════════════════════
 IMPORTANT PAYMENT NOTES
 ═══════════════════════════════════════════════════════════════
 
-• Please include Application ID (${app.id}) as your payment reference
+• Please include Application ID (${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}) as your payment reference
 ${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0} is due upon completion of key milestones` : ''}
 • Work commences within 24 hours of payment confirmation
 • Please send payment confirmation to info@clearrouteuk.co.uk
