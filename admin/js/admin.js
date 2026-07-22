@@ -1436,6 +1436,9 @@ window.viewApplication = async function(applicationId) {
             <button onclick="copyPaymentMail('${application.id}')" class="admin-btn admin-btn-success" style="width:100%;margin-bottom:8px;" title="Copy payment invoice text to clipboard">
               <i class="fas fa-copy"></i> Copy Payment Mail
             </button>
+            <button onclick="copySecondPaymentMail('${application.id}')" class="admin-btn admin-btn-outline" style="width:100%;margin-bottom:8px;border-color:#D4735E;color:#D4735E;" title="Copy second payment request email to clipboard">
+              <i class="fas fa-file-invoice"></i> Copy Second Payment Mail
+            </button>
             <button onclick="deleteApplication('${application.id}')" class="admin-btn admin-btn-danger" style="width:100%;">
               <i class="fas fa-trash"></i> Delete Application
             </button>
@@ -1569,87 +1572,135 @@ window.copyPaymentMail = async function(applicationId) {
 
     // Build payment text
     const paymentText = `
-═══════════════════════════════════════════════════════════════
-PAYMENT INVOICE - ClearRoute UK
-═══════════════════════════════════════════════════════════════
-
-INVOICE NUMBER: ${invoiceNumber}
-INVOICE DATE: ${invoiceDate}
-
 Dear ${app.first_name} ${app.last_name},
 
-Thank you for choosing ClearRoute UK for your ${serviceName}. 
-Your application has been reviewed and is ready for processing.
+I hope this message finds you well.
 
-═══════════════════════════════════════════════════════════════
-INVOICE DETAILS
-═══════════════════════════════════════════════════════════════
+Thank you once again for choosing ClearRoute UK for your ${serviceName}. We are pleased to let you know that your application is progressing well and is now ready for the next stage.
 
+Please find your payment invoice details below:
+
+━━━ INVOICE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Invoice Number: ${invoiceNumber}
+Invoice Date: ${invoiceDate}
 Application ID: ${app.id}
 Service: ${serviceName}
 ${pricingInfo?.packageName ? `Package: ${pricingInfo.packageName}` : ''}
 
-PAYMENT SUMMARY:
-${pricingInfo ? `
-Total Cost: £${pricingInfo.totalCost || pricingInfo.total_cost || 0}
-Upfront Payment Due: £${pricingInfo.upfrontPayment || pricingInfo.upfront_payment || 0}
-Remaining Balance: £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0}` : 'Contact us for pricing details'}
+━━━ PAYMENT SUMMARY ━━━━━━━━━━━━━━━━━━━━━━${pricingInfo ? `
+Total Cost:                  £${pricingInfo.totalCost || pricingInfo.total_cost || 0}
+Upfront Payment Due:         £${pricingInfo.upfrontPayment || pricingInfo.upfront_payment || 0}
+Remaining Balance:           £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0}` : '\nContact us for pricing details'}
 
-═══════════════════════════════════════════════════════════════
-CLIENT INFORMATION
-═══════════════════════════════════════════════════════════════
-
-Name: ${app.first_name} ${app.last_name}
-Email: ${app.email}
-${app.phone ? `Phone: ${app.phone}` : ''}
-${app.date_of_birth ? `Date of Birth: ${new Date(app.date_of_birth).toLocaleDateString('en-GB')}` : ''}
-${app.nationality ? `Nationality: ${app.nationality}` : ''}
-${app.address ? `Address: ${app.address}` : ''}
 ${serviceDetails}
 ${docStatus}
 
-═══════════════════════════════════════════════════════════════
-PAYMENT METHODS
-═══════════════════════════════════════════════════════════════
+━━━ PAYMENT METHODS ━━━━━━━━━━━━━━━━━━━━━━
 
-BANK TRANSFER (PREFERRED):
-Account Name: ${pc.accountName || 'ClearRoute UK'}
-Account Number: ${pc.accountNumber || '[UPDATE WITH YOUR ACCOUNT NUMBER]'}
-Sort Code: ${pc.sortCode || '[UPDATE WITH YOUR SORT CODE]'}
-Reference: ${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}
+Bank Transfer (Preferred):
+  Account Name:   ${pc.accountName || 'ClearRoute UK'}
+  Account Number: ${pc.accountNumber || '[UPDATE WITH YOUR ACCOUNT NUMBER]'}
+  Sort Code:      ${pc.sortCode || '[UPDATE WITH YOUR SORT CODE]'}
+  Reference:      ${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}
 
-ALTERNATIVE PAYMENT METHODS:
-• Wise Transfer: Send to ${pc.wiseEmail || 'info@clearrouteuk.co.uk'}
-• PayPal: Send to ${pc.paypalEmail || 'info@clearrouteuk.co.uk'}
-• WhatsApp: Contact us at ${pc.whatsApp || '+447983312575'} for payment link
+Alternative Payment Methods:
+  • Wise Transfer:   ${pc.wiseEmail || 'info@clearrouteuk.co.uk'}
+  • PayPal:          ${pc.paypalEmail || 'info@clearrouteuk.co.uk'}
+  • WhatsApp:        ${pc.whatsApp || '+447983312575'} (for payment link)
 
-═══════════════════════════════════════════════════════════════
-IMPORTANT PAYMENT NOTES
-═══════════════════════════════════════════════════════════════
+━━━ IMPORTANT NOTES ━━━━━━━━━━━━━━━━━━━━━
 
-• Please include Application ID (${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}) as your payment reference
-${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0} is due upon completion of key milestones` : ''}
-• Work commences within 24 hours of payment confirmation
-• Please send payment confirmation to info@clearrouteuk.co.uk
+• Please include your Application ID (${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}) as the payment reference
+${pricingInfo ? `• Remaining balance of £${pricingInfo.remainingBalance || pricingInfo.remaining_balance || 0} will be due upon completion of key milestones` : ''}
+• Work will commence within 24 hours of payment confirmation
+• Kindly send your payment confirmation to info@clearrouteuk.co.uk
 
-═══════════════════════════════════════════════════════════════
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-If you have any questions about this invoice or payment process, 
-please contact us at info@clearrouteuk.co.uk or WhatsApp +447983312575.
+We truly appreciate your trust in us. If you have any questions at all, please don't hesitate to reach out — we are here to help.
 
-© ${new Date().getFullYear()} ClearRoute UK. All rights reserved.
-Registered in England & Wales
-═══════════════════════════════════════════════════════════════
+Warm regards,
+The ClearRoute UK Team
+
+ClearRoute UK | Documentation Experts
+info@clearrouteuk.co.uk | +447983312575
 `.trim();
 
     // Copy to clipboard
     await navigator.clipboard.writeText(paymentText);
     
     _logAudit('payment_mail_copied', { application_id: applicationId });
-    alert('Payment invoice text copied to clipboard! You can now paste it in your email client.');
+    window.showToast('Payment invoice text copied to clipboard. You can now paste it into your email.', 'success', 4000);
   } catch (e) {
     console.error('Copy payment mail error:', e);
-    alert('Error copying payment text: ' + e.message);
+    window.showToast('Error copying payment text: ' + e.message, 'error', 4000);
+  }
+};
+
+window.copySecondPaymentMail = async function(applicationId) {
+  try {
+    const { data: app, error } = await db.from('applications').select('*').eq('id', applicationId).single();
+    if (error) throw error;
+
+    const pricingInfo = app.pricing_info && Object.keys(app.pricing_info).length > 0 ? app.pricing_info : null;
+    const pc = pricingInfo?.paymentConfig || {};
+    const serviceName = _serviceNames[app.service_type] || app.service_type;
+    const secondPaymentAmount = pricingInfo?.remainingBalance || pricingInfo?.remaining_balance || 0;
+
+    const paymentText = `
+Dear ${app.first_name} ${app.last_name},
+
+Hope you are doing well!
+
+Great news — your application for ${serviceName} is progressing beautifully, and we are nearly at the finish line. We just need one final step from your end to keep things moving.
+
+We would like to kindly request the second part of the application fee. This covers the final technical processing and ensures everything is configured correctly on our end. Consider it the last push to get everything over the line for you.
+
+Here are the details for the payment:
+
+━━━ SECOND PAYMENT ━━━━━━━━━━━━━━━━━━━━━
+
+Application ID: ${app.id}
+Service: ${serviceName}
+${pricingInfo?.packageName ? `Package: ${pricingInfo.packageName}` : ''}
+Amount Due: £${secondPaymentAmount}
+
+━━━ PAYMENT METHODS ━━━━━━━━━━━━━━━━━━━━━
+
+Bank Transfer (Preferred):
+  Account Name:   ${pc.accountName || 'ClearRoute UK'}
+  Account Number: ${pc.accountNumber || '[UPDATE WITH YOUR ACCOUNT NUMBER]'}
+  Sort Code:      ${pc.sortCode || '[UPDATE WITH YOUR SORT CODE]'}
+  Reference:      ${pc.paymentReference || app.id.slice(0, 8).toUpperCase()}
+
+Alternative Payment Methods:
+  • Wise Transfer:   ${pc.wiseEmail || 'info@clearrouteuk.co.uk'}
+  • PayPal:          ${pc.paypalEmail || 'info@clearrouteuk.co.uk'}
+  • WhatsApp:        ${pc.whatsApp || '+447983312575'} (for payment link)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Once this is sorted, we will handle all the technical bits on our end — and you will be all set. We will keep you updated every step of the way.
+
+As always, if you have any questions or would like a quick update, feel free to reply or reach out on WhatsApp. We are here for you.
+
+Thank you for trusting us with this journey!
+
+Warm regards,
+The ClearRoute UK Team
+
+ClearRoute UK | Documentation Experts
+info@clearrouteuk.co.uk | +447983312575
+`.trim();
+
+    await navigator.clipboard.writeText(paymentText);
+
+    _logAudit('second_payment_mail_copied', { application_id: applicationId });
+    window.showToast('Second payment email copied to clipboard. You can now paste it into your email.', 'success', 4000);
+  } catch (e) {
+    console.error('Copy second payment mail error:', e);
+    window.showToast('Error copying second payment email: ' + e.message, 'error', 4000);
   }
 };
 
