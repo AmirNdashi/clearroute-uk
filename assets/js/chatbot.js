@@ -137,7 +137,7 @@ function validateMessage(text) {
   ];
 
   for (const pattern of suspiciousPatterns) {
-    if (pattern.test(text) && !text.toLowerCase().includes('clearroute')) {
+    if (pattern.test(text) && !text.toLowerCase().includes('clearroute') && !text.toLowerCase().includes('clear route')) {
       return { valid: false, error: 'Please contact us directly for this request.' };
     }
   }
